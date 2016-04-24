@@ -6,16 +6,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Process implements Runnable {
 	
-	private HashMap<Integer, LinkedBlockingQueue<Message>> queues;
-	int[] allProcesses;
-	private LinkedBlockingQueue<Message> incomingMessages;
-	int id;
+	protected HashMap<Integer, LinkedBlockingQueue<Message>> queues;
+	protected int[] allProcesses;
+	protected double[] costs;
+	protected LinkedBlockingQueue<Message> incomingMessages;
+	protected int id;
 	
-	public Process(int id, int[] allProcesses, HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages) {
+	public Process(int id, int[] allProcesses, double[] costs, HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages) {
 		this.queues = queues;
 		this.incomingMessages = incomingMessages;
 		this.id = id;
 		this.allProcesses = allProcesses;
+		this.costs = costs;
 	}
 
 
@@ -25,7 +27,7 @@ public class Process implements Runnable {
 
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
-				sendMessage(allProcesses[i], new Message(id));
+				sendMessage(allProcesses[i], new Message(id, allProcesses[i], null));
 			}
 		}
 	}
@@ -36,7 +38,7 @@ public class Process implements Runnable {
 	}
 	
 	public void processMessage(Message m) {
-		System.out.println(id + " receiving " + m.getId());
+		System.out.println(id + " receiving " + m.getSender());
 		// TODO
 	}
 	

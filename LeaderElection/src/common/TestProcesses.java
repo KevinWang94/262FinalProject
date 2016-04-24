@@ -10,6 +10,7 @@ public class TestProcesses {
 		HashMap<Integer, LinkedBlockingQueue<Message>> queues = new HashMap<Integer, LinkedBlockingQueue<Message>>();
 		HashMap<Integer, Process> processes = new HashMap<Integer, Process>();
 		int[] ids = new int[n];
+		double[][] costs = new double[n][n];
 		
 		for (int i = 0; i < n; i++) {
 			//TODO: better generation of random id
@@ -19,17 +20,28 @@ public class TestProcesses {
 			}
 
 			ids[i] = id;
+			for (int j = 0; j < n; j++) {
+				if (i != j) {
+					costs[i][j] = Math.random()*10;
+				} else {
+					costs[i][j] = Double.MAX_VALUE;
+				}
+			}
 			queues.put(id, new LinkedBlockingQueue<Message>());
 		}
 		
 		for (int i = 0; i < n; i++) {
-			Process curr = new Process(ids[i], ids, queues, queues.get(ids[i]));
+			System.out.println(ids[i]);
+		}
+		
+		for (int i = 0; i < n; i++) {
+			Process curr = new Process(ids[i], ids, costs[i], queues, queues.get(ids[i]));
 			(new Thread(curr)).start();
 			processes.put(ids[i], curr);
 		}
 		
 		for (int i = 0; i < n; i++) {
-			Process curr = new Process(ids[i], ids, queues, queues.get(ids[i]));
+			Process curr = processes.get(ids[i]);
 			try {
 				curr.broadcast();
 			} catch (InterruptedException e) {

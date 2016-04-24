@@ -1,13 +1,25 @@
 package common;
 
 public class Message {
-	int id;
+	private int sender;
+	private int receiver;
+	private MessageContent content;
 	
-	public Message(int id) {
-		this.id = id;
+	public Message(int sender, int receiver, MessageContent content) {
+		this.sender = sender;
+		this.receiver = receiver;
+		this.content = content;
 	}
 
-	public int getId() {
-		return id;
+	public int getSender() {
+		return sender;
+	}
+	
+	public int getReciever() {
+		return receiver;
+	}
+	
+	public MessageContent getContent() {
+		return content;
 	}
 }

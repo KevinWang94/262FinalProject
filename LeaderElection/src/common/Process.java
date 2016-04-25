@@ -8,11 +8,11 @@ public class Process implements Runnable {
 	
 	protected HashMap<Integer, LinkedBlockingQueue<Message>> queues;
 	protected int[] allProcesses;
-	protected double[] costs;
+	protected HashMap<Integer, HashMap<Integer, Double>> costs;
 	protected LinkedBlockingQueue<Message> incomingMessages;
 	protected int id;
 	
-	public Process(int id, int[] allProcesses, double[] costs, HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages) {
+	public Process(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs, HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages) {
 		this.queues = queues;
 		this.incomingMessages = incomingMessages;
 		this.id = id;
@@ -42,7 +42,7 @@ public class Process implements Runnable {
 		// TODO
 	}
 	
-	public void checkForMessages() {
+	public void checkForMessages() {		
 		Message m = incomingMessages.poll();
 		if (m == null) {
 			return;

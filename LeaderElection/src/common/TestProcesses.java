@@ -5,12 +5,25 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class TestProcesses {
+	public static HashMap<Integer, HashMap<Integer, Double>> 
+		addToCosts(HashMap<Integer, HashMap<Integer, Double>> costs, int i, int j, double cost) {
+		if (costs.containsKey(i)) {
+			costs.get(i).put(j, cost);
+		} else {
+			HashMap<Integer, Double> newMap = new HashMap<Integer, Double>();
+			newMap.put(j, cost);
+			costs.put(i, newMap);
+		}		
+		return costs;
+	}
+	
 	public static void main(String[] args) {
 		int n = 4;
 		HashMap<Integer, LinkedBlockingQueue<Message>> queues = new HashMap<Integer, LinkedBlockingQueue<Message>>();
 		HashMap<Integer, Process> processes = new HashMap<Integer, Process>();
 		int[] ids = new int[n];
-		double[][] costs = new double[n][n];
+		HashMap<Integer, HashMap<Integer, Double>> costs = 
+				new HashMap<Integer, HashMap<Integer, Double>>();
 		
 		for (int i = 0; i < n; i++) {
 			//TODO: better generation of random id
@@ -20,12 +33,10 @@ public class TestProcesses {
 			}
 
 			ids[i] = id;
-			for (int j = 0; j < n; j++) {
-				if (i != j) {
-					costs[i][j] = Math.random()*10;
-				} else {
-					costs[i][j] = Double.MAX_VALUE;
-				}
+			for (int j = 0; j < i; j++) {
+				double cost = Math.random() * 10;
+				costs = addToCosts(costs, ids[i], ids[j], cost);
+				costs = addToCosts(costs, ids[j], ids[i], cost);
 			}
 			queues.put(id, new LinkedBlockingQueue<Message>());
 		}
@@ -35,7 +46,7 @@ public class TestProcesses {
 		}
 		
 		for (int i = 0; i < n; i++) {
-			Process curr = new Process(ids[i], ids, costs[i], queues, queues.get(ids[i]));
+			Process curr = new Process(ids[i], ids, costs, queues, queues.get(ids[i]));
 			(new Thread(curr)).start();
 			processes.put(ids[i], curr);
 		}

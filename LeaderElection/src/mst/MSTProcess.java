@@ -43,13 +43,7 @@ public class MSTProcess extends Process {
 	
 	@Override
 	public void broadcast() throws InterruptedException {
-		System.out.println("Broadcasting " + id);
-
-		for (int i = 0; i < allProcesses.length; i++) {
-			if (allProcesses[i] != id) {
-				sendMessage(allProcesses[i], new Message(id, allProcesses[i], null));
-			}
-		}
+		
 	}
 		
 	/**
@@ -125,6 +119,9 @@ public class MSTProcess extends Process {
 			} else {
 				if (w > bestWt) {
 					changeRoot();
+				} else if ((w == bestWt) && (w == Double.MAX_VALUE)) {
+					int leader = Math.min(id, sender);
+					
 				}
 			}
 		}

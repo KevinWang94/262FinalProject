@@ -19,28 +19,15 @@ public class BaselineProcess extends Process {
 		this.uuid = (int) (Math.random() * UUID_MAX);
 	}
 	
-	@Override
-	public void broadcast() throws InterruptedException {
-		// TODO
-		System.out.println("[Baseline] Broadcasting " + id);
-
-		for (int i = 0; i < allProcesses.length; i++) {
-			if (allProcesses[i] != id) {
-				BaselineMessageContent bmc = new BaselineMessageContent(
-						BaselineMessageContent.MSG_ELECT_LEADER,
-						uuid);
-						
-				sendMessage(allProcesses[i], new Message(uuid, allProcesses[i], bmc));
-			}
-		}
-	}
-	
-	public void queryLeader() {
+	public void broadcastUuid() throws InterruptedException {
+		BaselineMessageContent bmc = new BaselineMessageContent(
+				BaselineMessageContent.MSG_ELECT_LEADER,
+				uuid);
 		
+		broadcast(bmc);
 	}
 	
 	public void electLeader() throws InterruptedException {
-		broadcast();
 	}
 	
 	@Override

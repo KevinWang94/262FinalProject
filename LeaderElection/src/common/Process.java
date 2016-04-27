@@ -25,7 +25,15 @@ public abstract class Process implements Runnable {
 
 	public abstract void processMessage(Message m) throws InterruptedException;
 	
-	public abstract void broadcast() throws InterruptedException;
+	public void broadcast(MessageContent mContent) throws InterruptedException {
+		System.out.println("Broadcasting from " + id);
+
+		for (int i = 0; i < allProcesses.length; i++) {
+			if (allProcesses[i] != id) {
+				sendMessage(allProcesses[i], new Message(id, allProcesses[i], mContent));
+			}
+		}
+	}
 
 	// TODO: remove id because it's redundant
 	public void sendMessage(int id, Message m) throws InterruptedException {

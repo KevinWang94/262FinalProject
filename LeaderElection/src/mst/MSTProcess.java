@@ -43,6 +43,7 @@ public class MSTProcess extends Process {
 	
 	@Override
 	public void broadcast() throws InterruptedException {
+		// TODO
 		System.out.println("Broadcasting " + id);
 
 		for (int i = 0; i < allProcesses.length; i++) {

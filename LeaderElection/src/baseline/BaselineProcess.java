@@ -24,6 +24,9 @@ public class BaselineProcess extends Process {
 	/* Number of acks received that this process is the leader, during leader election */
 	private int numLeaderAcksReceived = 0;
 	
+	// TODO: change this to a queue to handle leader elections being triggered by queries.
+	BaselineMessageContent pendingQueryMC = null;
+	
 	public BaselineProcess(int id, int[] allProcesses, 
 			HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues,
@@ -46,12 +49,20 @@ public class BaselineProcess extends Process {
 	}
 	
 	@Override
-	public void queryLeader(String queryString) throws InterruptedException {		
-		if (this.leaderId == BaselineProcess.LEADER_ID_NONE) {
-			// TODO elect leader?
-		}
+	public void queryLeader(String queryString) throws InterruptedException {	
+		BaselineMessageContent queryMC = BaselineMessageContent.createBMCQueryLeader(queryString);
 		
-		sendMessage(leaderId, new Message(id, leaderId, BaselineMessageContent.createBMCQueryLeader(queryString)));
+		if (this.leaderId == BaselineProcess.ID_NONE) {
+			/* No leader chosen yet. Queue up the query to be sent later, and trigger the election.
+			 * When the election completes, the query will be sent out.
+			 * Note: this message gets dropped if it turns out this process is the leader.
+			 */
+			pendingQueryMC = queryMC;
+			triggerLeaderElection();
+			
+			return; 
+		}
+		sendMessage(leaderId, new Message(id, leaderId, queryMC));
 	}
 	
 	@Override
@@ -61,8 +72,8 @@ public class BaselineProcess extends Process {
 	
 	/* ========= Workload specific =========== */
 	@Override
-	protected void leaderRoutine() {
-		// TODO
+	protected void leaderRoutine() throws InterruptedException {
+		broadcastLeaderHello();
 	}
 	
 	// Responding to a query
@@ -95,13 +106,13 @@ public class BaselineProcess extends Process {
 	}
 	
 	private void ackLeader() throws InterruptedException {
-		assert(this.leaderId != BaselineProcess.LEADER_ID_NONE);
+		assert(this.leaderId != BaselineProcess.ID_NONE);
 		sendMessage(leaderId, new Message(id, leaderId, BaselineMessageContent.createBMCAckLeader()));
 	}
 	
 	/*======== Message receipt handlers =========*/
 	
-	private void processMessageAckLeader() {
+	private void processMessageAckLeader() throws InterruptedException {
 		numLeaderAcksReceived++;
 		if (numLeaderAcksReceived == allProcesses.length - 1 && isLeader) {
 			/* If everyone knows I'm the leader, including myself, then I can act as leader */	
@@ -148,12 +159,25 @@ public class BaselineProcess extends Process {
 				/* I'm the leader */
 				isLeader = true;
 				if (numLeaderAcksReceived == allProcesses.length - 1) {
-					/* Everyone also knows I'm the leader, so I can start acting as such*/
+					/* Everyone also knows I'm the leader, so I can start acting as such */
+					
+					/* First handle whatever query to the leader that might have arrived before election finished  */
+					if (pendingQueryMC != null) {
+						sendMessage(leaderId, new Message(id, leaderId, pendingQueryMC));
+						pendingQueryMC = null;
+					}
+					
 					leaderRoutine();
 				}
 			} else {
 				assert(numLeaderAcksReceived == 0);
 				ackLeader();
+				
+				/* If a query was queued up to be sent before leader election, do it now */
+				if (pendingQueryMC != null) {
+					sendMessage(leaderId, new Message(id, leaderId, pendingQueryMC));
+					pendingQueryMC = null;
+				}
 			}
 		}
 	}

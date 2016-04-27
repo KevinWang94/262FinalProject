@@ -2,9 +2,7 @@ package baseline;
 
 import common.MessageContent;
 
-public class BaselineMessageContent implements MessageContent{
-	public static final int UUID_NONE = -1;
-	
+public class BaselineMessageContent implements MessageContent{	
 	public static final int MSG_ELECT_LEADER = 1;
 	
 	private int type;
@@ -12,7 +10,7 @@ public class BaselineMessageContent implements MessageContent{
 	
 	public BaselineMessageContent(int type) {
 		this.type = type;
-		this.senderUuid = this.UUID_NONE;
+		this.senderUuid = BaselineProcess.UUID_INVALID;
 	}
 	
 	public BaselineMessageContent(int type, int senderUuid) {

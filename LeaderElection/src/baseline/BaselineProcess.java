@@ -9,6 +9,7 @@ import common.Process;
 
 public class BaselineProcess extends Process {
 	public static final int UUID_MAX = 1000000;
+	public static final int UUID_INVALID = -1;
 
 	private int uuid;
 	
@@ -42,6 +43,29 @@ public class BaselineProcess extends Process {
 	@Override
 	public void electLeader() throws InterruptedException {
 		broadcastUuid();
+		
+		int uuidsReceived = 0;
+		int leaderUuid = UUID_INVALID;
+		
+		while (uuidsReceived < allProcesses.length - 1) {
+			Message m = incomingMessages.poll();
+			if (m == null) {
+				continue;
+			}
+			
+			BaselineMessageContent bmc = (BaselineMessageContent) m.getContent();
+			
+			assert(bmc.getType() == bmc.MSG_ELECT_LEADER);
+			
+			int senderUuid = bmc.getUuid();
+			assert(senderUuid != UUID_INVALID);
+			
+			if (leaderUuid < senderUuid) {
+				leaderUuid = senderUuid;
+				leaderId = m.getSender();
+			}
+			uuidsReceived++;
+		}
 	}
 	
 	@Override

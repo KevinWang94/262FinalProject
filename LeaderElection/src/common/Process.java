@@ -23,17 +23,14 @@ public abstract class Process implements Runnable {
 		this.leaderId = this.LEADER_ID_NONE;
 	}
 
-	public abstract void processMessage(Message m) throws InterruptedException;
+	protected abstract void processMessage(Message m) throws InterruptedException;
 	
-	public void broadcast(MessageContent mContent) throws InterruptedException {
-		System.out.println("Broadcasting from " + id);
-
-		for (int i = 0; i < allProcesses.length; i++) {
-			if (allProcesses[i] != id) {
-				sendMessage(allProcesses[i], new Message(id, allProcesses[i], mContent));
-			}
-		}
-	}
+	public abstract void broadcast(MessageContent mContent) throws InterruptedException;
+	
+	// This shouldn't return until leader election is complete, and all requisite acks are sent
+	public abstract void electLeader()  throws InterruptedException;
+	
+	public abstract void queryLeader(MessageContent mContent) throws InterruptedException;
 
 	// TODO: remove id because it's redundant
 	public void sendMessage(int id, Message m) throws InterruptedException {
@@ -41,13 +38,6 @@ public abstract class Process implements Runnable {
 		queue.put(m);
 	}
 	
-	public void queryLeader(MessageContent mContent) throws InterruptedException {
-		// no-op if no leader elected yet. TODO: should this throw an error?
-		if (this.leaderId != this.LEADER_ID_NONE) {
-			sendMessage(leaderId, new Message(id, leaderId, mContent));
-		}
-	}
-		
 	public void checkForMessages() throws InterruptedException {		
 		Message m = incomingMessages.poll();
 		if (m == null) {

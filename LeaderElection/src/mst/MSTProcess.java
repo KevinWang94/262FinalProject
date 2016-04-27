@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import common.Message;
+import common.MessageContent;
 import common.Process;
 
 public class MSTProcess extends Process {
@@ -282,6 +283,21 @@ public class MSTProcess extends Process {
 		}
 	}
 
+	@Override
+	public void electLeader() throws InterruptedException {
+		//TODO
+	}
+
+	@Override
+	public void broadcast(MessageContent mContent) throws InterruptedException {
+		//TODO
+	}
+	
+	@Override
+	public void queryLeader(MessageContent mContent) throws InterruptedException {
+		//TODO
+	}
+	
 	@Override
 	public void processMessage(Message m) throws InterruptedException {
 		MSTMessageContent msg = (MSTMessageContent) m.getContent();

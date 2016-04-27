@@ -20,19 +20,29 @@ public class TestProcess extends Process {
 	public void processMessage(Message m) {
 		System.out.println(id + " receiving " + m.getSender());
 	}
-	
-	@Override
-	public void electLeader() {
-		System.out.println(id + " electing leader");
-	}
+
 
 	@Override
 	public void broadcast(MessageContent mContent) throws InterruptedException {
 		System.out.println(id + " broadcasting");
 	}
 	
+
 	@Override
-	public void queryLeader(MessageContent mContent) throws InterruptedException {
-		System.out.println(id + " querying leader");
+	public void triggerLeaderElection() throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void queryLeader(String queryString) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void leaderRoutine() {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import baseline.put;
-
 public abstract class Process implements Runnable {
 	protected static final int LEADER_ID_NONE = -1;
 
@@ -15,6 +13,8 @@ public abstract class Process implements Runnable {
 	protected LinkedBlockingQueue<Message> incomingMessages;
 	protected int id;
 	protected int leaderId;
+	
+	/* true iff this process has computed itself as leader */
 	protected boolean isLeader;
 	
 	public Process(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs, HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages) {
@@ -27,17 +27,15 @@ public abstract class Process implements Runnable {
 		this.isLeader = false;
 	}
 	
-	public abstract void triggerElection(); 
+	/* PUBLIC API */
+	public abstract void triggerLeaderElection() throws InterruptedException; 
+	public abstract void broadcast(MessageContent mc) throws InterruptedException;
+	public abstract void queryLeader(String queryString) throws InterruptedException;
 
+	/* COMMON HELPERS */
 	protected abstract void processMessage(Message m) throws InterruptedException;
+	protected abstract void leaderRoutine();	
 	
-	public abstract void broadcast(MessageContent mContent) throws InterruptedException;
-	
-	// This shouldn't return until leader election is complete, and all requisite acks are sent
-	public abstract void electLeader()  throws InterruptedException;
-	
-	public abstract void queryLeader(MessageContent mContent) throws InterruptedException;
-
 	// TODO: remove id because it's redundant
 	public void sendMessage(int id, Message m) throws InterruptedException {
 		BlockingQueue<Message> queue = queues.get(id);

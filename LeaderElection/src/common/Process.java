@@ -23,7 +23,7 @@ public abstract class Process implements Runnable {
 		this.leaderId = this.LEADER_ID_NONE;
 	}
 
-	public abstract void processMessage(Message m);
+	public abstract void processMessage(Message m) throws InterruptedException;
 	
 	public abstract void broadcast() throws InterruptedException;
 
@@ -40,7 +40,7 @@ public abstract class Process implements Runnable {
 		}
 	}
 		
-	public void checkForMessages() {		
+	public void checkForMessages() throws InterruptedException {		
 		Message m = incomingMessages.poll();
 		if (m == null) {
 			return;
@@ -52,7 +52,12 @@ public abstract class Process implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			checkForMessages();
+			try {
+				checkForMessages();
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {

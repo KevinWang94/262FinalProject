@@ -8,6 +8,8 @@ public class MSTMessageContent implements MessageContent{
 	public static final int MSG_REJECT = 3;
 	public static final int MSG_REPORT = 4;
 	public static final int MSG_CHANGEROOT = 5;
+	public static final int MSG_INITIATE = 6;
+	public static final int MSG_TEST = 7;
 	
 	private int type;
 	private double[] args;

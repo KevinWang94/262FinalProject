@@ -6,10 +6,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import common.Message;
 import common.MessageContent;
 import common.Process;
+import common.put;
 
 public class BaselineProcess extends Process {
 	public static final int UUID_MAX = 1000000;
 	public static final int UUID_INVALID = -1;
+	
+	public static final String broadcastString = "kevin is s3xy";
 
 	private int uuid;
 	
@@ -39,6 +42,25 @@ public class BaselineProcess extends Process {
 		
 		broadcast(bmc);
 	}
+	
+	int num_things_seen = 0;
+	
+	public void processUUIDBroadcast() {
+		num_things_seen++;
+		if (done && other done (below)) {
+			broadcast(BROADCAST_STRING);
+		}
+	}
+	
+	int num_election_end_received = 0;
+	
+	public void processElectionEndMessage() {
+		num_election_end_received ++;
+		if (other done && isLeader) {
+			broadcast(BROADCAST_STRING);
+		}
+	}
+		
 	
 	@Override
 	public void electLeader() throws InterruptedException {

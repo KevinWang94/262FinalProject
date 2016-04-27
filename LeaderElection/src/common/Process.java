@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import baseline.put;
+
 public abstract class Process implements Runnable {
 	protected static final int LEADER_ID_NONE = -1;
 
@@ -13,6 +15,7 @@ public abstract class Process implements Runnable {
 	protected LinkedBlockingQueue<Message> incomingMessages;
 	protected int id;
 	protected int leaderId;
+	protected boolean isLeader;
 	
 	public Process(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs, HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages) {
 		this.queues = queues;
@@ -21,7 +24,10 @@ public abstract class Process implements Runnable {
 		this.allProcesses = allProcesses;
 		this.costs = costs;
 		this.leaderId = this.LEADER_ID_NONE;
+		this.isLeader = false;
 	}
+	
+	public abstract void triggerElection(); 
 
 	protected abstract void processMessage(Message m) throws InterruptedException;
 	

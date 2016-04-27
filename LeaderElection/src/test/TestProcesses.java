@@ -58,7 +58,7 @@ public class TestProcesses {
 		for (int i = 0; i < n; i++) {
 			Process curr = processes.get(ids[i]);
 			try {
-				curr.broadcast();
+				curr.broadcast(null);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -43,7 +43,7 @@ public class MSTProcess extends Process {
 			this.se.put(nextId, SE_BASIC);
 		}
 	}
-	
+
 	/**
 	 * Gets the index of the minimum adjacent edge.
 	 * 
@@ -147,6 +147,9 @@ public class MSTProcess extends Process {
 			} else {
 				if (w > bestWt) {
 					changeRoot();
+				} else if ((w == bestWt) && (w == Double.MAX_VALUE)) {
+					int leader = Math.min(id, sender);
+					
 				}
 			}
 		}

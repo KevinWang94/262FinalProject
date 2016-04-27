@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Process implements Runnable {
+public abstract class Process implements Runnable {
 	
 	protected HashMap<Integer, LinkedBlockingQueue<Message>> queues;
 	protected int[] allProcesses;
@@ -20,28 +20,15 @@ public class Process implements Runnable {
 		this.costs = costs;
 	}
 
-
-	public void broadcast() throws InterruptedException {
-		//TODO
-		System.out.println("Broadcasting " + id);
-
-		for (int i = 0; i < allProcesses.length; i++) {
-			if (allProcesses[i] != id) {
-				sendMessage(allProcesses[i], new Message(id, allProcesses[i], null));
-			}
-		}
-	}
+	public abstract void processMessage(Message m);
 	
+	public abstract void broadcast() throws InterruptedException;
+
 	public void sendMessage(int id, Message m) throws InterruptedException {
 		BlockingQueue<Message> queue = queues.get(id);
 		queue.put(m);
 	}
-	
-	public void processMessage(Message m) {
-		System.out.println(id + " receiving " + m.getSender());
-		// TODO
-	}
-	
+		
 	public void checkForMessages() {		
 		Message m = incomingMessages.poll();
 		if (m == null) {
@@ -50,7 +37,6 @@ public class Process implements Runnable {
 		processMessage(m);
 		return;
 	}
-	
 	
 	@Override
 	public void run() {

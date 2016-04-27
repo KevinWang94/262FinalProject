@@ -1,8 +1,12 @@
-package common;
+package test;
 
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import common.Message;
+import common.Process;
+import mst.MSTProcess;
 
 public class TestProcesses {
 	public static HashMap<Integer, HashMap<Integer, Double>> 
@@ -46,7 +50,7 @@ public class TestProcesses {
 		}
 		
 		for (int i = 0; i < n; i++) {
-			Process curr = new Process(ids[i], ids, costs, queues, queues.get(ids[i]));
+			Process curr = new TestProcess(ids[i], ids, costs, queues, queues.get(ids[i]));
 			(new Thread(curr)).start();
 			processes.put(ids[i], curr);
 		}
@@ -60,6 +64,5 @@ public class TestProcesses {
 				e.printStackTrace();
 			}
 		}
-
 	}
 }

@@ -19,20 +19,22 @@ public class MSTProcess extends Process {
 
 	int ln;
 	int sn;
+	double fn;
 	HashMap<Integer, Integer> se;
 	int findCount = 0;
 	int testEdge = -1; // -1 is used as nil value
 	double bestWt = -1;
 	int bestEdge = -1;
 	int inBranch = -1;
-	
-	public MSTProcess(int id, int[] allProcesses, 
+
+	public MSTProcess(int id, int[] allProcesses,
 			HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues,
 			LinkedBlockingQueue<Message> incomingMessages) {
 		super(id, allProcesses, costs, queues, incomingMessages);
 		this.ln = 0;
 		this.sn = SN_SLEEPING;
+		this.fn = -1;
 		this.se = new HashMap<Integer, Integer>();
 		Iterator<Integer> it = costs.get(id).keySet().iterator();
 		while (it.hasNext()) {
@@ -50,7 +52,8 @@ public class MSTProcess extends Process {
 		int minEdge = -1;
 		double minCost = Double.MAX_VALUE;
 		HashMap<Integer, Double> edgeCosts = costs.get(id);
-		Iterator<Map.Entry<Integer, Double>> it = edgeCosts.entrySet().iterator();
+		Iterator<Map.Entry<Integer, Double>> it = edgeCosts.entrySet()
+				.iterator();
 		while (it.hasNext()) {
 			Map.Entry<Integer, Double> pair = it.next();
 			if (pair.getValue() < minCost) {
@@ -60,7 +63,7 @@ public class MSTProcess extends Process {
 		}
 		return minEdge;
 	}
-	
+
 	public void wakeup() throws InterruptedException {
 		int minEdge = getMinEdge();
 		se.put(minEdge, SE_BRANCH);
@@ -71,9 +74,38 @@ public class MSTProcess extends Process {
 				allProcesses[minEdge], new MSTMessageContent(
 						MSTMessageContent.MSG_CONNECT, args)));
 	}
-	
-	public void processConnect(double[] args) {
-		
+
+	public void processConnect(Message m) throws InterruptedException {
+		int sender = m.getSender();
+		double[] args = ((MSTMessageContent) m.getContent()).getArgs();
+
+		if (sn == SN_SLEEPING) {
+			wakeup();
+		}
+
+		if (args[0] < ln) {
+			se.put(sender, SE_BRANCH);
+			double[] newargs = new double[3];
+			newargs[0] = ln;
+			newargs[1] = fn;
+			newargs[2] = sn;
+			this.sendMessage(sender, new Message(id, sender,
+					new MSTMessageContent(MSTMessageContent.MSG_INITIATE,
+							newargs)));
+			if (sn == SN_FIND) {
+				findCount++;
+			}
+		} else if (se.get(sender) == SE_BASIC) {
+			this.incomingMessages.put(m);
+		} else {
+			double[] newargs = new double[3];
+			newargs[0] = ln + 1;
+			newargs[1] = costs.get(id).get(sender);
+			newargs[2] = SN_FIND;
+			this.sendMessage(sender, new Message(id, sender,
+					new MSTMessageContent(MSTMessageContent.MSG_INITIATE,
+							newargs)));
+		}
 	}
 
 	public void processAccept(int sender) {
@@ -85,14 +117,14 @@ public class MSTProcess extends Process {
 			report();
 		}
 	}
-	
+
 	public void processReject(int sender) {
 		if (se.get(sender) == SE_BASIC) {
 			se.put(sender, SE_REJECTED);
 			test();
 		}
 	}
-	
+
 	public void processReport(Message m) {
 		MSTMessageContent msg = (MSTMessageContent) m.getContent();
 		double w = (msg.getArgs())[0];
@@ -108,7 +140,7 @@ public class MSTProcess extends Process {
 			if (sn == SN_FIND) {
 				try {
 					incomingMessages.put(m);
-				} catch(InterruptedException e) {
+				} catch (InterruptedException e) {
 					System.err.println("Failed to find incoming messages\n");
 				}
 			} else {
@@ -122,22 +154,22 @@ public class MSTProcess extends Process {
 	public void changeRoot() {
 		if (se.get(bestEdge) == SE_BRANCH) {
 			try {
-				this.sendMessage(bestEdge, new Message(id,
-					bestEdge, new MSTMessageContent(
-							MSTMessageContent.MSG_CHANGEROOT, null)));
-			} catch(InterruptedException e) {
+				this.sendMessage(bestEdge, new Message(id, bestEdge,
+						new MSTMessageContent(MSTMessageContent.MSG_CHANGEROOT,
+								null)));
+			} catch (InterruptedException e) {
 				System.err.println("Failed to send message.\n");
 			}
 		} else {
 			double[] args = new double[1];
 			args[0] = ln;
 			try {
-				this.sendMessage(bestEdge, new Message(id,
-					bestEdge, new MSTMessageContent(
-							MSTMessageContent.MSG_CONNECT, args)));
-			} catch(InterruptedException e) {
+				this.sendMessage(bestEdge, new Message(id, bestEdge,
+						new MSTMessageContent(MSTMessageContent.MSG_CONNECT,
+								args)));
+			} catch (InterruptedException e) {
 				System.err.println("Failed to send message.\n");
-			}	
+			}
 			se.put(bestEdge, SE_BRANCH);
 		}
 	}
@@ -145,43 +177,128 @@ public class MSTProcess extends Process {
 	public void processChangeRoot() {
 		changeRoot();
 	}
-	
-	public void test() {
-		
+
+	public void processInitiate(Message m) {
+		double[] args = ((MSTMessageContent) m.getContent()).getArgs();
+		ln = (int) args[0];
+		fn = args[1];
+		sn = (int) args[2];
+		bestEdge = -1;
+		bestWt = Double.MAX_VALUE;
+		Iterator<Integer> it = se.keySet().iterator();
+		while (it.hasNext()) {
+			int nextId = it.next();
+			if (nextId != id && se.get(nextId) == SE_BRANCH) {
+				double[] newargs = new double[3];
+				newargs[0] = ln;
+				newargs[1] = fn;
+				newargs[2] = sn;
+				try {
+					this.sendMessage(nextId, new Message(id, nextId,
+							new MSTMessageContent(
+									MSTMessageContent.MSG_INITIATE, newargs)));
+				} catch (InterruptedException e) {
+					System.err.println("Failed to send message.\n");
+				}
+				if (sn == SN_FIND) {
+					this.test();
+				}
+			}
+		}
 	}
-	
+
+	public void test() {
+		boolean hasBasic = false;
+		Iterator<Integer> it = se.keySet().iterator();
+		double weight = Double.MAX_VALUE;
+		while (it.hasNext()) {
+			int nextId = it.next();
+			if (se.get(nextId) == SE_BASIC) {
+				hasBasic = true;
+				if (costs.get(id).get(nextId) < weight) {
+					testEdge = nextId;
+				}
+			}
+		}
+		if (hasBasic) {
+			double[] newargs = new double[2];
+			newargs[0] = ln;
+			newargs[1] = fn;
+			try {
+				this.sendMessage(testEdge, new Message(id, testEdge,
+						new MSTMessageContent(MSTMessageContent.MSG_TEST,
+								newargs)));
+			} catch (InterruptedException e) {
+				System.err.println("Failed to send message.\n");
+			}
+		} else {
+			testEdge = -1;
+			this.report();
+		}
+	}
+
+	public void processTest(Message m) throws InterruptedException {
+		if (sn == SN_SLEEPING) {
+			this.wakeup();
+		}
+
+		double[] args = ((MSTMessageContent) m.getContent()).getArgs();
+		int l = (int) args[0];
+		double f = args[1];
+
+		if (l > ln) {
+			incomingMessages.put(m);
+		} else if (f != fn) {
+			this.sendMessage(m.getSender(), new Message(id, m.getSender(),
+					new MSTMessageContent(MSTMessageContent.MSG_ACCEPT, null)));
+		} else {
+			if (se.get(m.getSender()) == SE_BASIC) {
+				se.put(m.getSender(), SE_REJECTED);
+				if (testEdge != m.getSender()) {
+					this.sendMessage(
+							m.getSender(),
+							new Message(id, m.getSender(),
+									new MSTMessageContent(
+											MSTMessageContent.MSG_REJECT, null)));
+				} else {
+					this.test();
+				}
+			}
+		}
+	}
+
 	public void report() {
 		if (findCount == 0 && testEdge == -1) {
 			sn = SN_FOUND;
 			double[] args = new double[1];
 			args[0] = bestWt;
 			try {
-				this.sendMessage(inBranch, new Message(id,
-					inBranch, new MSTMessageContent(
-							MSTMessageContent.MSG_REPORT, args)));
-			} catch(InterruptedException e) {
+				this.sendMessage(inBranch, new Message(id, inBranch,
+						new MSTMessageContent(MSTMessageContent.MSG_REPORT,
+								args)));
+			} catch (InterruptedException e) {
 				System.err.println("Failed to send message.\n");
 			}
 		}
 	}
 
 	@Override
-	public void processMessage(Message m) {
+	public void processMessage(Message m) throws InterruptedException {
 		MSTMessageContent msg = (MSTMessageContent) m.getContent();
 		if (msg.getType() == MSTMessageContent.MSG_CONNECT) {
-			processConnect(msg.getArgs());
-		}
-		if (msg.getType() == MSTMessageContent.MSG_ACCEPT) {
+			processConnect(m);
+		} else if (msg.getType() == MSTMessageContent.MSG_ACCEPT) {
 			processAccept(m.getSender());
-		}
-		if (msg.getType() == MSTMessageContent.MSG_REJECT) {
+		} else if (msg.getType() == MSTMessageContent.MSG_REJECT) {
 			processReject(m.getSender());
-		}
-		if (msg.getType() == MSTMessageContent.MSG_REPORT) {
+		} else if (msg.getType() == MSTMessageContent.MSG_REPORT) {
 			processReport(m);
-		}
-		if (msg.getType() == MSTMessageContent.MSG_CHANGEROOT) {
+		} else if (msg.getType() == MSTMessageContent.MSG_CHANGEROOT) {
 			processChangeRoot();
+		} else if (msg.getType() == MSTMessageContent.MSG_INITIATE) {
+			processInitiate(m);
+		} else if (msg.getType() == MSTMessageContent.MSG_TEST) {
+			processTest(m);
 		}
 	}
 }

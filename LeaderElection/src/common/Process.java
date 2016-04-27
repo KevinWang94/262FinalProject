@@ -37,12 +37,12 @@ public class Process implements Runnable {
 		queue.put(m);
 	}
 	
-	public void processMessage(Message m) {
+	public void processMessage(Message m) throws InterruptedException {
 		System.out.println(id + " receiving " + m.getSender());
 		// TODO
 	}
 	
-	public void checkForMessages() {		
+	public void checkForMessages() throws InterruptedException {		
 		Message m = incomingMessages.poll();
 		if (m == null) {
 			return;
@@ -55,7 +55,12 @@ public class Process implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			checkForMessages();
+			try {
+				checkForMessages();
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {

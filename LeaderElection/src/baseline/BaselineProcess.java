@@ -43,7 +43,7 @@ public class BaselineProcess extends Process {
 		assert(mc instanceof BaselineMessageContent);
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
-				sendMessage(allProcesses[i], new Message(id, allProcesses[i], mc));
+				sendMessage(new Message(id, allProcesses[i], mc));
 			}
 		}
 	}
@@ -57,12 +57,14 @@ public class BaselineProcess extends Process {
 			 * When the election completes, the query will be sent out.
 			 * Note: this message gets dropped if it turns out this process is the leader.
 			 */
+			
+			/* TODO TODO THIS IS BROKEN
 			pendingQueryMC = queryMC;
 			triggerLeaderElection();
-			
+			*/
 			return; 
 		}
-		sendMessage(leaderId, new Message(id, leaderId, queryMC));
+		sendMessage(new Message(id, leaderId, queryMC));
 	}
 	
 	@Override
@@ -71,11 +73,7 @@ public class BaselineProcess extends Process {
 	}
 	
 	/* ========= Workload specific =========== */
-	@Override
-	protected void leaderRoutine() throws InterruptedException {
-		broadcastLeaderHello();
-	}
-	
+
 	// Responding to a query
 	private void leaderResponse(Message m) {
 		// TODO
@@ -87,7 +85,8 @@ public class BaselineProcess extends Process {
 	
 	/*======== Message sending helpers  =========*/
 	
-	private void broadcastLeaderHello() throws InterruptedException {
+	@Override
+	protected void broadcastLeaderHello() throws InterruptedException {
 		assert(isLeader);		
 		broadcast(BaselineMessageContent.createBMCLeaderHello());
 	}
@@ -100,14 +99,14 @@ public class BaselineProcess extends Process {
 		/* Broadcast UUID to all */
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
-				sendMessage(allProcesses[i], new Message(id, allProcesses[i], BaselineMessageContent.createBMCElectLeader(uuid)));
+				sendMessage(new Message(id, allProcesses[i], BaselineMessageContent.createBMCElectLeader(uuid)));
 			}
 		}
 	}
 	
 	private void ackLeader() throws InterruptedException {
 		assert(this.leaderId != BaselineProcess.ID_NONE);
-		sendMessage(leaderId, new Message(id, leaderId, BaselineMessageContent.createBMCAckLeader()));
+		sendMessage(new Message(id, leaderId, BaselineMessageContent.createBMCAckLeader()));
 	}
 	
 	/*======== Message receipt handlers =========*/
@@ -138,7 +137,7 @@ public class BaselineProcess extends Process {
 	
 	private void processMessageElectLeader(Message m) throws InterruptedException {
 		BaselineMessageContent bmc = (BaselineMessageContent) m.getContent();
-		assert(bmc.getType() == BaselineMessageContent.MSG_ELECT_LEADER);
+		assert(m.getType() == Message.MSG_ELECT_LEADER);
 		
 		int senderUuid = bmc.getUuid();
 		assert(senderUuid != UUID_INVALID);
@@ -163,7 +162,7 @@ public class BaselineProcess extends Process {
 					
 					/* First handle whatever query to the leader that might have arrived before election finished  */
 					if (pendingQueryMC != null) {
-						sendMessage(leaderId, new Message(id, leaderId, pendingQueryMC));
+						sendMessage(new Message(id, leaderId, pendingQueryMC));
 						pendingQueryMC = null;
 					}
 					
@@ -175,32 +174,45 @@ public class BaselineProcess extends Process {
 				
 				/* If a query was queued up to be sent before leader election, do it now */
 				if (pendingQueryMC != null) {
-					sendMessage(leaderId, new Message(id, leaderId, pendingQueryMC));
+					sendMessage(new Message(id, leaderId, pendingQueryMC));
 					pendingQueryMC = null;
 				}
 			}
 		}
 	}
 	
-	@Override
-	public void processMessage(Message m) throws InterruptedException {
-		BaselineMessageContent bmc = (BaselineMessageContent) m.getContent();
-		switch (bmc.getType()) {
-         case BaselineMessageContent.MSG_ELECT_LEADER:
-        	 processMessageElectLeader(m);
-        	 break;
-         case BaselineMessageContent.MSG_ACK_LEADER:
-        	 processMessageAckLeader();
-        	 break;
-         case BaselineMessageContent.MSG_QUERY_LEADER:
-        	 processMessageQueryLeader(m);
-        	 break;
-         case BaselineMessageContent.MSG_LEADER_RESPONSE:
-        	 processMessageFromLeader(m);
-        	 break;
-         default: 
+	public void processMessageSpecial(Message m) throws InterruptedException {	
+		switch (m.getType()) {
+	      case Message.MSG_ELECT_LEADER:
+	       	processMessageElectLeader(m);
+	       	break;
+          default: 
         	 // TODO error
         	 break;
 		}
+	}
+
+	@Override
+	protected void broadcastHello() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageAckLeader(Message m) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageQueryLeader(Message m) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageFromLeader(Message m) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
 	}
 }

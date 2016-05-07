@@ -2,7 +2,7 @@ package mst;
 
 import common.MessageContent;
 
-public class MSTMessageContent implements MessageContent{
+public class MSTMessageContent extends MessageContent{
 	public static final int MSG_CONNECT = 1;
 	public static final int MSG_ACCEPT = 2;
 	public static final int MSG_REJECT = 3;
@@ -15,6 +15,7 @@ public class MSTMessageContent implements MessageContent{
 	private double[] args;
 	
 	public MSTMessageContent(int type, double[] args) {
+		super();
 		this.type = type;
 		this.args = args;
 	}

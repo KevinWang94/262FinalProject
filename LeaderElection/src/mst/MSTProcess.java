@@ -73,7 +73,7 @@ public class MSTProcess extends Process {
 		ln = 0;
 		double[] args = new double[1];
 		args[0] = 0;
-		this.sendMessage(minEdge, new Message(id,
+		this.sendMessage(new Message(id,
 				minEdge, new MSTMessageContent(
 						MSTMessageContent.MSG_CONNECT, args)));
 	}
@@ -92,7 +92,7 @@ public class MSTProcess extends Process {
 			newargs[0] = ln;
 			newargs[1] = fn;
 			newargs[2] = sn;
-			this.sendMessage(sender, new Message(id, sender,
+			this.sendMessage(new Message(id, sender,
 					new MSTMessageContent(MSTMessageContent.MSG_INITIATE,
 							newargs)));
 			if (sn == SN_FIND) {
@@ -105,7 +105,7 @@ public class MSTProcess extends Process {
 			newargs[0] = ln + 1;
 			newargs[1] = costs.get(id).get(sender);
 			newargs[2] = SN_FIND;
-			this.sendMessage(sender, new Message(id, sender,
+			this.sendMessage(new Message(id, sender,
 					new MSTMessageContent(MSTMessageContent.MSG_INITIATE,
 							newargs)));
 		}
@@ -160,7 +160,7 @@ public class MSTProcess extends Process {
 	public void changeRoot() {
 		if (se.get(bestEdge) == SE_BRANCH) {
 			try {
-				this.sendMessage(bestEdge, new Message(id, bestEdge,
+				this.sendMessage(new Message(id, bestEdge,
 						new MSTMessageContent(MSTMessageContent.MSG_CHANGEROOT,
 								null)));
 			} catch (InterruptedException e) {
@@ -170,7 +170,7 @@ public class MSTProcess extends Process {
 			double[] args = new double[1];
 			args[0] = ln;
 			try {
-				this.sendMessage(bestEdge, new Message(id, bestEdge,
+				this.sendMessage(new Message(id, bestEdge,
 						new MSTMessageContent(MSTMessageContent.MSG_CONNECT,
 								args)));
 			} catch (InterruptedException e) {
@@ -201,7 +201,7 @@ public class MSTProcess extends Process {
 				newargs[1] = fn;
 				newargs[2] = sn;
 				try {
-					this.sendMessage(nextId, new Message(id, nextId,
+					this.sendMessage(new Message(id, nextId,
 							new MSTMessageContent(
 									MSTMessageContent.MSG_INITIATE, newargs)));
 					if (sn == SN_FIND) {
@@ -237,7 +237,7 @@ public class MSTProcess extends Process {
 			newargs[0] = ln;
 			newargs[1] = fn;
 			try {
-				this.sendMessage(testEdge, new Message(id, testEdge,
+				this.sendMessage(new Message(id, testEdge,
 						new MSTMessageContent(MSTMessageContent.MSG_TEST,
 								newargs)));
 			} catch (InterruptedException e) {
@@ -261,14 +261,13 @@ public class MSTProcess extends Process {
 		if (l > ln) {
 			incomingMessages.put(m);
 		} else if (f != fn) {
-			this.sendMessage(m.getSender(), new Message(id, m.getSender(),
+			this.sendMessage(new Message(id, m.getSender(),
 					new MSTMessageContent(MSTMessageContent.MSG_ACCEPT, null)));
 		} else {
 			if (se.get(m.getSender()) == SE_BASIC) {
 				se.put(m.getSender(), SE_REJECTED);
 				if (testEdge != m.getSender()) {
 					this.sendMessage(
-							m.getSender(),
 							new Message(id, m.getSender(),
 									new MSTMessageContent(
 											MSTMessageContent.MSG_REJECT, null)));
@@ -286,7 +285,7 @@ public class MSTProcess extends Process {
 			double[] args = new double[1];
 			args[0] = bestWt;
 			try {
-				this.sendMessage(inBranch, new Message(id, inBranch,
+				this.sendMessage(new Message(id, inBranch,
 						new MSTMessageContent(MSTMessageContent.MSG_REPORT,
 								args)));
 			} catch (InterruptedException e) {
@@ -313,8 +312,7 @@ public class MSTProcess extends Process {
 		
 	}
 		
-	@Override
-	public void processMessage(Message m) throws InterruptedException {
+	public void processMessageSpecial(Message m) throws InterruptedException {
 		MSTMessageContent msg = (MSTMessageContent) m.getContent();
 		if (msg.getType() == MSTMessageContent.MSG_CONNECT) {
 			System.out.println("connect " + this.id);
@@ -343,12 +341,5 @@ public class MSTProcess extends Process {
 	@Override
 	public void triggerLeaderElection() throws InterruptedException {
 		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void leaderRoutine() throws InterruptedException {
-		// TODO Auto-generated method stub
-		
 	}
 }

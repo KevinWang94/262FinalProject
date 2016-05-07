@@ -24,7 +24,7 @@ public class MSTProcess extends Process {
 	HashMap<Integer, Integer> se;
 	int findCount = 0;
 	int testEdge = -1; // -1 is used as nil value
-	double bestWt = -1;
+	double bestWt = Double.MAX_VALUE;
 	int bestEdge = -1;
 	int inBranch = -1;
 
@@ -66,13 +66,14 @@ public class MSTProcess extends Process {
 	}
 
 	public void wakeup() throws InterruptedException {
+		System.out.println("wakeup " + this.id);
 		int minEdge = getMinEdge();
 		se.put(minEdge, SE_BRANCH);
 		sn = SN_FOUND;
 		double[] args = new double[1];
 		args[0] = 0;
-		this.sendMessage(allProcesses[minEdge], new Message(id,
-				allProcesses[minEdge], new MSTMessageContent(
+		this.sendMessage(minEdge, new Message(id,
+				minEdge, new MSTMessageContent(
 						MSTMessageContent.MSG_CONNECT, args)));
 	}
 
@@ -148,8 +149,8 @@ public class MSTProcess extends Process {
 				if (w > bestWt) {
 					changeRoot();
 				} else if ((w == bestWt) && (w == Double.MAX_VALUE)) {
-					int leader = Math.min(id, sender);
-					
+					this.leaderId = Math.min(id, sender);
+					System.out.println("Leader is " + this.leaderId);
 				}
 			}
 		}
@@ -187,6 +188,7 @@ public class MSTProcess extends Process {
 		ln = (int) args[0];
 		fn = args[1];
 		sn = (int) args[2];
+		inBranch = m.getSender();
 		bestEdge = -1;
 		bestWt = Double.MAX_VALUE;
 		Iterator<Integer> it = se.keySet().iterator();
@@ -286,7 +288,6 @@ public class MSTProcess extends Process {
 		}
 	}
 
-	@Override
 	public void electLeader() throws InterruptedException {
 		//TODO
 	}
@@ -296,28 +297,49 @@ public class MSTProcess extends Process {
 		//TODO
 	}
 	
+
 	@Override
-	public void queryLeader(MessageContent mContent) throws InterruptedException {
-		//TODO
+	public void queryLeader(String queryString) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
 	}
-	
+		
 	@Override
 	public void processMessage(Message m) throws InterruptedException {
 		MSTMessageContent msg = (MSTMessageContent) m.getContent();
 		if (msg.getType() == MSTMessageContent.MSG_CONNECT) {
+			System.out.println("connect " + this.id);
 			processConnect(m);
 		} else if (msg.getType() == MSTMessageContent.MSG_ACCEPT) {
+			System.out.println("accept " + this.id);
 			processAccept(m.getSender());
 		} else if (msg.getType() == MSTMessageContent.MSG_REJECT) {
+			System.out.println("reject " + this.id);
 			processReject(m.getSender());
 		} else if (msg.getType() == MSTMessageContent.MSG_REPORT) {
+			System.out.println("report " + this.id);
 			processReport(m);
 		} else if (msg.getType() == MSTMessageContent.MSG_CHANGEROOT) {
+			System.out.println("changeroot " + this.id);
 			processChangeRoot();
 		} else if (msg.getType() == MSTMessageContent.MSG_INITIATE) {
+			System.out.println("initiate " + this.id);
 			processInitiate(m);
 		} else if (msg.getType() == MSTMessageContent.MSG_TEST) {
+			System.out.println("test " + this.id);
 			processTest(m);
 		}
+	}
+
+	@Override
+	public void triggerLeaderElection() throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void leaderRoutine() throws InterruptedException {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -1,6 +1,7 @@
 package common;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import mst.MSTProcess;
@@ -18,36 +19,51 @@ public abstract class ElectionRunner {
 		}
 		return costs;
 	}
-
-	public static void instantiateAndRun(int numProcesses) {
-		HashMap<Integer, LinkedBlockingQueue<Message>> queues = new HashMap<Integer, LinkedBlockingQueue<Message>>();
-		HashMap<Integer, Process> processes = new HashMap<Integer, Process>();
+	
+	public int[] genIds(int numProcesses) {
+		HashSet<Integer> seen = new HashSet<Integer>();
 		int[] ids = new int[numProcesses];
-		HashMap<Integer, HashMap<Integer, Double>> costs = new HashMap<Integer, HashMap<Integer, Double>>();
-
 		for (int i = 0; i < numProcesses; i++) {
 			// TODO: better generation of random id
 			int id = (int) (Math.random() * 1000);
-			while (queues.containsKey(id)) {
+			while (seen.contains(id)) {
 				id = (int) (Math.random() * 1000);
 			}
 
 			ids[i] = id;
+		}
+		return ids;
+	}
+	
+	public HashMap<Integer, HashMap<Integer, Double>> genCosts(int[] ids) {
+		HashMap<Integer, HashMap<Integer, Double>> costs = new HashMap<Integer, HashMap<Integer, Double>>();
+
+		for (int i = 0; i < ids.length; i++) {
 			for (int j = 0; j < i; j++) {
 				double cost = Math.random() * 10;
 				costs = addToCosts(costs, ids[i], ids[j], cost);
 				costs = addToCosts(costs, ids[j], ids[i], cost);
 			}
-			queues.put(id, new LinkedBlockingQueue<Message>());
+		}
+		
+		return costs;
+	}
+
+	public static void instantiateAndRun(int[] ids, HashMap<Integer, HashMap<Integer, Double>> costs) {
+		HashMap<Integer, LinkedBlockingQueue<Message>> queues = new HashMap<Integer, LinkedBlockingQueue<Message>>();
+		HashMap<Integer, Process> processes = new HashMap<Integer, Process>();
+
+		for (int i = 0; i < ids.length; i++) {
+			queues.put(ids[i], new LinkedBlockingQueue<Message>());
 		}
 
 		CostTracker tracker = new CostTracker(ids);
 		
-		for (int i = 0; i < numProcesses; i++) {
+		for (int i = 0; i < ids.length; i++) {
 			// System.out.println(ids[i]);
 		}
 
-		for (int i = 0; i < numProcesses; i++) {
+		for (int i = 0; i < ids.length; i++) {
 			Process curr = new MSTProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker);
 			(new Thread(curr)).start();
 			processes.put(ids[i], curr);

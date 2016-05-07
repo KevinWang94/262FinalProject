@@ -27,5 +27,15 @@ public class CostTracker {
 		stageCosts.put(processID, stageCosts.get(processID) + cost);
 		costs.put(s, stageCosts);
 	}
-
+	
+	public void printCosts() {
+		for(Stage s : Stage.values()) {
+			ConcurrentHashMap<Integer, Double> stageCosts = costs.get(s);
+			double sum = 0;
+			for(Double d : stageCosts.values()) {
+				sum += d;
+			}
+			System.out.println("The cost for stage " + s.name() + " is: " + Double.toString(sum));
+		}
+	}
 }

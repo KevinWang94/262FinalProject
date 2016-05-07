@@ -70,6 +70,7 @@ public class MSTProcess extends Process {
 		int minEdge = getMinEdge();
 		se.put(minEdge, SE_BRANCH);
 		sn = SN_FOUND;
+		ln = 0;
 		double[] args = new double[1];
 		args[0] = 0;
 		this.sendMessage(minEdge, new Message(id,
@@ -116,15 +117,15 @@ public class MSTProcess extends Process {
 		if (newCost < bestWt) {
 			bestEdge = sender;
 			bestWt = newCost;
-			report();
 		}
+		report();
 	}
 
 	public void processReject(int sender) {
 		if (se.get(sender) == SE_BASIC) {
 			se.put(sender, SE_REJECTED);
-			test();
 		}
+		test();
 	}
 
 	public void processReport(Message m) {
@@ -194,7 +195,7 @@ public class MSTProcess extends Process {
 		Iterator<Integer> it = se.keySet().iterator();
 		while (it.hasNext()) {
 			int nextId = it.next();
-			if (nextId != id && se.get(nextId) == SE_BRANCH) {
+			if (nextId != m.getSender() && se.get(nextId) == SE_BRANCH) {
 				double[] newargs = new double[3];
 				newargs[0] = ln;
 				newargs[1] = fn;
@@ -203,13 +204,16 @@ public class MSTProcess extends Process {
 					this.sendMessage(nextId, new Message(id, nextId,
 							new MSTMessageContent(
 									MSTMessageContent.MSG_INITIATE, newargs)));
+					if (sn == SN_FIND) {
+						findCount = findCount + 1;
+					}
 				} catch (InterruptedException e) {
 					System.err.println("Failed to send message.\n");
 				}
-				if (sn == SN_FIND) {
-					this.test();
-				}
 			}
+		}
+		if (sn == SN_FIND) {
+			this.test();
 		}
 	}
 
@@ -221,8 +225,10 @@ public class MSTProcess extends Process {
 			int nextId = it.next();
 			if (se.get(nextId) == SE_BASIC) {
 				hasBasic = true;
-				if (costs.get(id).get(nextId) < weight) {
+				double currweight = costs.get(id).get(nextId);
+				if (currweight < weight) {
 					testEdge = nextId;
+					weight = currweight;
 				}
 			}
 		}
@@ -275,6 +281,7 @@ public class MSTProcess extends Process {
 
 	public void report() {
 		if (findCount == 0 && testEdge == -1) {
+			System.out.println("report " + inBranch + " " + id);
 			sn = SN_FOUND;
 			double[] args = new double[1];
 			args[0] = bestWt;
@@ -285,6 +292,8 @@ public class MSTProcess extends Process {
 			} catch (InterruptedException e) {
 				System.err.println("Failed to send message.\n");
 			}
+		} else {
+			System.out.println("no report " + inBranch + " " + id);
 		}
 	}
 

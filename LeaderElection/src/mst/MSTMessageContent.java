@@ -10,6 +10,7 @@ public class MSTMessageContent implements MessageContent{
 	public static final int MSG_CHANGEROOT = 5;
 	public static final int MSG_INITIATE = 6;
 	public static final int MSG_TEST = 7;
+	public static final int MSG_LEADER = 8;
 	
 	private int type;
 	private double[] args;

@@ -47,7 +47,10 @@ public class MSTElection implements ElectionInterface {
 		}
 		
 		for (int i = 0; i < n; i++) {
-			//System.out.println(ids[i]);
+			for (int j = 0; j < n; j++) {
+				if (i != j)
+					System.out.println(ids[i] + " " + ids[j] + ": " + costs.get(ids[i]).get(ids[j]));
+			}
 		}
 		
 		for (int i = 0; i < n; i++) {

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import common.CostTracker;
 import common.Message;
 import common.MessageContent;
 import common.Process;
@@ -31,8 +32,9 @@ public class MSTProcess extends Process {
 	public MSTProcess(int id, int[] allProcesses,
 			HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues,
-			LinkedBlockingQueue<Message> incomingMessages) {
-		super(id, allProcesses, costs, queues, incomingMessages);
+			LinkedBlockingQueue<Message> incomingMessages,
+			CostTracker costTracker) {
+		super(id, allProcesses, costs, queues, incomingMessages, costTracker);
 		this.ln = 0;
 		this.sn = SN_SLEEPING;
 		this.fn = -1;
@@ -314,6 +316,7 @@ public class MSTProcess extends Process {
 		
 	public void processMessageSpecial(Message m) throws InterruptedException {
 		MSTMessageContent msg = (MSTMessageContent) m.getContent();
+		// TODO: costs need to be registered here
 		if (msg.getType() == MSTMessageContent.MSG_CONNECT) {
 			System.out.println("connect " + this.id);
 			processConnect(m);

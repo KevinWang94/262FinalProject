@@ -41,12 +41,14 @@ public abstract class ElectionRunner {
 			queues.put(id, new LinkedBlockingQueue<Message>());
 		}
 
+		CostTracker tracker = new CostTracker(ids);
+		
 		for (int i = 0; i < numProcesses; i++) {
 			// System.out.println(ids[i]);
 		}
 
 		for (int i = 0; i < numProcesses; i++) {
-			Process curr = new MSTProcess(ids[i], ids, costs, queues, queues.get(ids[i]));
+			Process curr = new MSTProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker);
 			(new Thread(curr)).start();
 			processes.put(ids[i], curr);
 		}

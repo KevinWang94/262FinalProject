@@ -345,4 +345,28 @@ public class MSTProcess extends Process {
 	public void triggerLeaderElection() throws InterruptedException {
 		// TODO Auto-generated method stub
 	}
+
+	@Override
+	protected void broadcastLeaderHello() throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageAckLeader(Message m) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageQueryLeader(Message m) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageFromLeader(Message m) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
 }

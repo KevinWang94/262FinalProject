@@ -10,7 +10,8 @@ import common.Process;
 public class TestProcess extends Process {
 	
 	public TestProcess(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs, HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages) {
-		super(id, allProcesses, costs, queues, incomingMessages);
+		// TODO: decide if we need TestPRocess
+		// super(id, allProcesses, costs, queues, incomingMessages);
 		assert(allProcesses != null);
 	}
 

@@ -10,9 +10,11 @@ import util.PathInfo;
 import common.CostTracker;
 import common.Message;
 import common.Message.MessageType;
+import common.MessageContent;
+import mst.MSTBase;
 import mst.MSTProcess;
 
-public class ShortestPathProcess extends MSTProcess {
+public class ShortestPathProcess extends MSTBase {
 
 	public enum ShortestPathState {
 		STATE_TRANSMIT,
@@ -211,5 +213,41 @@ public class ShortestPathProcess extends MSTProcess {
 	@Override
 	public void triggerLeaderElection() {
 		wakeup();
+	}
+
+	@Override
+	public void broadcast(MessageType messageType, MessageContent mc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void queryLeader(MessageContent mc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void ackLeader() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageAckLeader() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processLeaderBroadcastSimple(Message m) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processQuerySimple(Message m) {
+		// TODO Auto-generated method stub
+		
 	}
 }

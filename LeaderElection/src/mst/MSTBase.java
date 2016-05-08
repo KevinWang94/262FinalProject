@@ -30,7 +30,8 @@ public abstract class MSTBase extends Process {
 	int bestEdge = -1;
 	protected int inBranch = -1;
 	protected int numChildren = -1;
-
+	protected int numBranch = -1;
+	
 	public MSTBase(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages,
 			CostTracker costTracker) {
@@ -309,11 +310,43 @@ public abstract class MSTBase extends Process {
 				this.sendMessage(new Message(id, nextId, messageType, m));
 			}
 		}
-		if (numChildren < 0)
+		if (numChildren < 0) {
 			numChildren = count;
+			numBranch = isLeader ? numChildren : numChildren + 1;
+		}
 		return isLeaf;
 	}
 
 	public abstract void processFinish(Message m);
 
+	public boolean processMessageSpecial(Message m) {
+		switch (m.getType()) {
+		  case MSG_MST_CONNECT:
+			  processConnect(m);
+			  return true;
+		  case MSG_MST_ACCEPT:
+			  processAccept(m.getSender());
+			  return true;
+		  case MSG_MST_REJECT:
+			  processReject(m.getSender());
+			  return true;
+		  case MSG_MST_REPORT:
+			processReport(m);
+			  return true;
+		  case MSG_MST_CHANGEROOT:
+			processChangeRoot();
+			  return true;
+		  case MSG_MST_INITIATE:
+			processInitiate(m);
+			  return true;
+		  case MSG_MST_TEST:
+			processTest(m);
+			  return true;
+		  case MSG_MST_FINISH:
+			processFinish(m);
+			  return true;
+		  default:
+			  return false;
+		}
+	}
 }

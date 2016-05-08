@@ -103,7 +103,7 @@ public class ShortestPathProcess extends MSTBase {
 				break;
 			}
 		}
-
+		System.out.println("Transmitting partial distance matrix.");
 		this.sendMessage(new Message(id, sendId, 
 				MessageType.MSG_PATH_PARTIAL,
 				new ShortestPathMessageContent(pd)));
@@ -111,6 +111,7 @@ public class ShortestPathProcess extends MSTBase {
 	
 	public void augmentPd(HashMap<Pair, PathInfo> newPd) {
 		for (Pair pair : newPd.keySet()) {
+			System.out.println(newPd.get(pair).getCost() + " " + pd.get(pair).getCost());
 			if (newPd.get(pair).getCost() < pd.get(pair).getCost()) {
 				pd.put(pair, newPd.get(pair));
 			}
@@ -180,11 +181,11 @@ public class ShortestPathProcess extends MSTBase {
 		augmentPd(mContent.getPaths());
 		count++;
 		seen.add(m.getSender());
-		if (count == numChildren) {
+		if (count == numBranch - 1) {
 			state = ShortestPathState.STATE_TRANSMIT;
 			transmittingNodeProcess();
 		}
-		if (count == (numChildren + 1)) {
+		if (count == numBranch) {
 			state = ShortestPathState.STATE_SATURATED;
 			sendFinalPaths(-1);
 		}
@@ -197,16 +198,21 @@ public class ShortestPathProcess extends MSTBase {
 		sendFinalPaths(m.getSender());
 	}
 	
-	public void processMessageSpecial(Message m) {
+	public boolean processMessageSpecial(Message m) {
+		boolean done = super.processMessageSpecial(m);
+		if (done) 
+			return true;
 		switch (m.getType()) {
 			case MSG_PATH_PARTIAL:
 				processPathPartial(m);
-				break;
+				System.out.println("Processing path partial from " + m.getSender() + " to " + m.getReceiver());
+				return true;
 			case MSG_PATH_FINAL:
 				processPathFinal(m);
-				break;
+				System.out.println("Processing path final from " + m.getSender() + " to " + m.getReceiver());
+				return true;
 			default:
-				// TODO FAIL
+				return false;
 		}
 	}
 

@@ -40,7 +40,7 @@ public abstract class Process implements Runnable {
 	protected abstract void ackLeader();
 
 	/* Message handling */
-	protected abstract void processMessageSpecial(Message m);
+	protected abstract boolean processMessageSpecial(Message m);
 	protected abstract void processMessageAckLeader();
 	
 	/************************************************************ 

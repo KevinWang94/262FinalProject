@@ -52,37 +52,6 @@ public class MSTProcess extends MSTBase {
 		}
 	}
 
-	public void processMessageSpecial(Message m) {
-		switch (m.getType()) {
-		  case MSG_MST_CONNECT:
-			  processConnect(m);
-			  break;
-		  case MSG_MST_ACCEPT:
-			  processAccept(m.getSender());
-			  break;
-		  case MSG_MST_REJECT:
-			  processReject(m.getSender());
-			  break;
-		  case MSG_MST_REPORT:
-			processReport(m);
-			break;
-		  case MSG_MST_CHANGEROOT:
-			processChangeRoot();
-			break;
-		  case MSG_MST_INITIATE:
-			processInitiate(m);
-			break;
-		  case MSG_MST_TEST:
-			processTest(m);
-			break;
-		  case MSG_MST_FINISH:
-			processFinish(m);
-			break;
-		  default:
-			// TODO FAIL
-		}
-	}
-
 	@Override
 	public void triggerLeaderElection() {
 		wakeup();

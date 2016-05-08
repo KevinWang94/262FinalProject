@@ -180,15 +180,15 @@ public class BaselineProcess extends Process {
 	 * Redirects to specific handler for the MessageType.
 	 *
 	 * @param  m	the message received
+	 * @return  true if message was processed; false if case not handled
 	 */
-	public void processMessageSpecial(Message m) {
+	public boolean processMessageSpecial(Message m) {
 		switch (m.getType()) {
 		case MSG_BASELINE_ELECT_LEADER:
 			processMessageElectLeader(m);
-			break;
+			return true;
 		default:
-			// TODO error
-			break;
+			return false;
 		}
 	}
 }

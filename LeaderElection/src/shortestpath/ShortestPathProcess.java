@@ -118,8 +118,8 @@ public class ShortestPathProcess extends MSTBase {
 		}
 		for (Pair pair : pd.keySet()) {
 			for (Integer i : allProcesses) {
-				int fst = pair.fst();
-				int snd = pair.snd();
+				int fst = pair.getFst();
+				int snd = pair.getSnd();
 				Pair pair1 = new Pair(fst, i);
 				Pair pair2 = new Pair(i, snd);
 				double cost1 = pd.get(pair1).getCost();
@@ -140,7 +140,7 @@ public class ShortestPathProcess extends MSTBase {
 		for (Integer i : allProcesses) {
 			double val = (method == LeaderMethod.METHOD_MAX) ? -1 : 0; 
 			for (Pair pair : pd.keySet()) {
-				if (pair.fst() == i) {
+				if (pair.getFst() == i) {
 					double newCost = pd.get(pair).getCost();
 					if (method == LeaderMethod.METHOD_MAX) {
 						if (newCost > val) {

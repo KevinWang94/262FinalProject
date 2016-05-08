@@ -89,8 +89,8 @@ public abstract class Process implements Runnable {
 		case MSG_QUERY_SIMPLE:
 			s = Stage.QUERY;
 			break;
-		}	
-		this.costTracker.registerCosts(s, id, costs.get(id).get(m.getSender()));
+		}
+		this.costTracker.registerCosts(s, id, costs.get(id).get(m.getReceiver()));
 	}
 	
 	protected void dumpCosts() {
@@ -121,7 +121,7 @@ public abstract class Process implements Runnable {
 	public void sendMessage(Message m) {
 		registerCost(m);
 		try {
-			BlockingQueue<Message> queue = queues.get(m.getReciever());
+			BlockingQueue<Message> queue = queues.get(m.getReceiver());
 			queue.put(m);
 		} catch (InterruptedException e) {
 			e.printStackTrace();

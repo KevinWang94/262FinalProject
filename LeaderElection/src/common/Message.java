@@ -43,7 +43,7 @@ public class Message {
 		return sender;
 	}
 	
-	public int getReciever() {
+	public int getReceiver() {
 		return receiver;
 	}
 	

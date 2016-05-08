@@ -21,10 +21,16 @@ public class ShortestPathProcess extends MSTProcess {
 		STATE_UNASSIGNED
 	}
 	
+	public enum LeaderMethod {
+		METHOD_MAX,
+		METHOD_SUM
+	}
+	
 	private ShortestPathState state;
 	HashMap<Pair, PathInfo> pd;
 	int count;
 	HashSet<Integer> seen;
+	private LeaderMethod method;
 	
 	public ShortestPathProcess(int id, int[] allProcesses,
 			HashMap<Integer, HashMap<Integer, Double>> costs,
@@ -36,6 +42,7 @@ public class ShortestPathProcess extends MSTProcess {
 		pd = new HashMap<Pair, PathInfo>();
 		count = 0;
 		seen = new HashSet<Integer>();
+		method = LeaderMethod.METHOD_SUM;
 	}
 
 	@Override
@@ -124,6 +131,38 @@ public class ShortestPathProcess extends MSTProcess {
 		}
 	}
 	
+	public void chooseLeader() {
+		double bestVal = Double.MAX_VALUE; 
+		int bestId = -1;
+		for (Integer i : allProcesses) {
+			double val = (method == LeaderMethod.METHOD_MAX) ? -1 : 0; 
+			for (Pair pair : pd.keySet()) {
+				if (pair.fst() == i) {
+					double newCost = pd.get(pair).getCost();
+					if (method == LeaderMethod.METHOD_MAX) {
+						if (newCost > val) {
+							val = newCost;
+						}
+					} else {
+						val += newCost;
+					}
+				}
+			}
+			if (val < bestVal) {
+				bestVal = val;
+				bestId = i;
+			}
+ 		}
+
+		leaderId = bestId;
+		isLeader = (leaderId == id);
+		printDebugInfo();
+	}
+	
+	public void printDebugInfo() {
+		System.out.println("Leader: " + leaderId);
+	}
+	
 	public void sendFinalPaths(int noSendId) {
 		for (Integer i : se.keySet()) {
 			if ((se.get(i) == MSTProcess.SE_BRANCH) && (id != noSendId)) {
@@ -131,6 +170,7 @@ public class ShortestPathProcess extends MSTProcess {
 						new ShortestPathMessageContent(pd)));				
 			}
 		}
+		chooseLeader();
 	}
 	
 	public void processPathPartial(Message m) {
@@ -168,5 +208,8 @@ public class ShortestPathProcess extends MSTProcess {
 		}
 	}
 
-
+	@Override
+	public void triggerLeaderElection() {
+		wakeup();
+	}
 }

@@ -175,8 +175,7 @@ public class MSTProcess extends Process {
 						double[] newargs = new double[1];
 						newargs[0] = leaderId;
 						passMessage(new MSTMessageContent(
-								MSTMessageContent.MSG_LEADER, newargs), -1);		
-						
+								MSTMessageContent.MSG_LEADER, newargs), -1);
 					}
 				}
 			}
@@ -335,10 +334,7 @@ public class MSTProcess extends Process {
 		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
 		System.out.println(m.getSender() + " to " + id);
 		System.out.println(id + ": " + messagesSent + " " + messagesSentCost);
-		double[] newargs = new double[1];
-		newargs[0] = leaderId;
-		passMessage(new MSTMessageContent(
-				MSTMessageContent.MSG_LEADER, newargs), m.getSender());		
+		passMessage(m.getContent(), m.getSender());		
 	}
 	
 	private void passMessage(MessageContent m, int originalSender) {

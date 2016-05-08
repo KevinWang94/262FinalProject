@@ -365,20 +365,28 @@ public class MSTProcess extends Process {
 		switch (m.getType()) {
 		  case Message.MSG_MST_CONNECT:
 			  processConnect(m);
+			  break;
 		  case Message.MSG_MST_ACCEPT:
 			  processAccept(m.getSender());
+			  break;
 		  case Message.MSG_MST_REJECT:
 			processReject(m.getSender());
+			break;
 		  case Message.MSG_MST_REPORT:
 			processReport(m);
+			break;
 		  case Message.MSG_MST_CHANGEROOT:
 			processChangeRoot();
+			break;
 		  case Message.MSG_MST_INITIATE:
 			processInitiate(m);
+			break;
 		  case Message.MSG_MST_TEST:
 			processTest(m);
+			break;
 		  case Message.MSG_MST_FINISH:
 			processFinish(m);
+			break;
 		  default:
 			// TODO FAIL
 		}

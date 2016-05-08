@@ -5,7 +5,6 @@ public class Message {
 	public enum MessageType {
 		/* common */
 		MSG_ACK_LEADER,
-		MSG_START_SIMPLE,
 		MSG_LEADER_BROADCAST_SIMPLE,
 		MSG_QUERY_SIMPLE,
 		
@@ -21,6 +20,10 @@ public class Message {
 		MSG_MST_INITIATE,
 		MSG_MST_TEST,
 		MSG_MST_FINISH,
+		
+		/* path */
+		MSG_PATH_PARTIAL,
+		MSG_PATH_FINAL,
 	}
 	
 	private int sender;

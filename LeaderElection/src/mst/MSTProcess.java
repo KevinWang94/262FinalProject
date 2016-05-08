@@ -342,7 +342,6 @@ public class MSTProcess extends Process {
 	}
 
 	public void processMessageSpecial(Message m) throws InterruptedException {
-		// TODO: costs need to be registered here
 		switch (m.getType()) {
 		  case MSG_MST_CONNECT:
 			  processConnect(m);

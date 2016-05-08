@@ -182,7 +182,12 @@ public class MSTProcess extends Process {
 
 						double[] newargs = new double[1];
 						newargs[0] = leaderId;
-						passMessage(Message.MSG_MST_LEADER, new MSTMessageContent(newargs));
+						try {
+							this.sendMessage(new Message(id, leaderId, Message.MSG_MST_FINISH, new MSTMessageContent(newargs)));
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				}
 			}
@@ -330,7 +335,7 @@ public class MSTProcess extends Process {
 		}
 	}
 
-	public void processLeader(Message m) {
+	public void processFinish(Message m) {
 		MSTMessageContent mContent = (MSTMessageContent) m.getContent();
 		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
 		System.out.println(m.getSender() + " to " + id);
@@ -385,8 +390,8 @@ public class MSTProcess extends Process {
 			processInitiate(m);
 		  case Message.MSG_MST_TEST:
 			processTest(m);
-		  case Message.MSG_MST_LEADER:
-			processLeader(m);
+		  case Message.MSG_MST_FINISH:
+			processFinish(m);
 		  default:
 			// TODO FAIL
 		}

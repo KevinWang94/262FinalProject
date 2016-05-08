@@ -8,7 +8,8 @@ import mst.MSTProcess;
 public class MSTElectionRunner extends ElectionRunner {
 	
 	public static void main(String[] args) {
-		instantiateAndRun(10);
+		int[] ids = genIds(10);
+		instantiateAndRun(ids, genCosts(ids));
 	}
 
 }

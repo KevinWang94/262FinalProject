@@ -51,12 +51,12 @@ public abstract class Process implements Runnable {
 		
 	public void startRunningSimple() throws InterruptedException {
 		assert(isLeader);
-		broadcast(MessageType.MSG_START_SIMPLE, new MessageContent("Hello!"));
+		broadcast(MessageType.MSG_LEADER_BROADCAST_SIMPLE, new MessageContent("Hello!"));
 	}
 	
 	private void processLeaderBroadcastSimple(Message m) throws InterruptedException {
 		assert(!isLeader);
-		queryLeader(MessageType.MSG_LEADER_BROADCAST_SIMPLE, new MessageContent("Why are you talking to me?"));
+		queryLeader(MessageType.MSG_QUERY_SIMPLE, new MessageContent("Why are you talking to me?"));
 	}
 	
 	int numSimpleQueriesReceived = 0;

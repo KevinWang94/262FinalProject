@@ -5,7 +5,6 @@ public class Message {
 	public enum MessageType {
 		/* common */
 		MSG_ACK_LEADER,
-		MSG_START_SIMPLE,
 		MSG_LEADER_BROADCAST_SIMPLE,
 		MSG_QUERY_SIMPLE,
 		

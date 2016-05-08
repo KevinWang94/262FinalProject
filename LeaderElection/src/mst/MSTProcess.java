@@ -3,6 +3,7 @@ package mst;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import common.CostTracker;
@@ -28,6 +29,8 @@ public class MSTProcess extends Process {
 	double bestWt = Double.MAX_VALUE;
 	int bestEdge = -1;
 	int inBranch = -1;
+	int messagesSent = 0;
+	double messagesSentCost = 0;
 
 	public MSTProcess(int id, int[] allProcesses,
 			HashMap<Integer, HashMap<Integer, Double>> costs,
@@ -43,6 +46,15 @@ public class MSTProcess extends Process {
 		while (it.hasNext()) {
 			int nextId = it.next();
 			this.se.put(nextId, SE_BASIC);
+		}
+	}
+
+	@Override
+	public void sendMessage(Message m) throws InterruptedException {
+		super.sendMessage(m);
+		if (((MSTMessageContent) m.getContent()).getType() < 8) {
+			messagesSent++;
+			messagesSentCost += costs.get(id).get(m.getSender());
 		}
 	}
 
@@ -68,11 +80,12 @@ public class MSTProcess extends Process {
 	}
 
 	public void wakeup() throws InterruptedException {
-		System.out.println("wakeup " + this.id);
+		System.out.println(this.id + " " + this.fn + " wakeup");
 		int minEdge = getMinEdge();
 		se.put(minEdge, SE_BRANCH);
 		sn = SN_FOUND;
 		ln = 0;
+		findCount = 0;
 		double[] args = new double[1];
 		args[0] = 0;
 		this.sendMessage(new Message(id,
@@ -81,6 +94,8 @@ public class MSTProcess extends Process {
 	}
 
 	public void processConnect(Message m) throws InterruptedException {
+		System.out.println(this.id + " " + this.fn + " process connect from "
+				+ m.getSender());
 		int sender = m.getSender();
 		double[] args = ((MSTMessageContent) m.getContent()).getArgs();
 
@@ -114,6 +129,7 @@ public class MSTProcess extends Process {
 	}
 
 	public void processAccept(int sender) {
+		System.out.println(this.id + " " + this.fn + " process accept");
 		testEdge = -1;
 		double newCost = costs.get(id).get(sender);
 		if (newCost < bestWt) {
@@ -124,6 +140,7 @@ public class MSTProcess extends Process {
 	}
 
 	public void processReject(int sender) {
+		System.out.println(this.id + " " + this.fn + " process reject");
 		if (se.get(sender) == SE_BASIC) {
 			se.put(sender, SE_REJECTED);
 		}
@@ -131,6 +148,8 @@ public class MSTProcess extends Process {
 	}
 
 	public void processReport(Message m) {
+		System.out.println(this.id + " " + this.fn + " process report "
+				+ this.inBranch);
 		MSTMessageContent msg = (MSTMessageContent) m.getContent();
 		double w = (msg.getArgs())[0];
 		int sender = m.getSender();
@@ -153,13 +172,29 @@ public class MSTProcess extends Process {
 					changeRoot();
 				} else if ((w == bestWt) && (w == Double.MAX_VALUE)) {
 					this.leaderId = Math.min(id, sender);
-					System.out.println("Leader is " + this.leaderId);
+					if (id == leaderId) {
+						for (int i = 0; i < allProcesses.length; i++) {
+							for (int j = i + 1; j < allProcesses.length; j++) {
+								System.out.println(allProcesses[i] + " " + allProcesses[j] + ": " + costs.get(allProcesses[i]).get(allProcesses[j]));
+							}
+						}
+
+						System.out.println("Leader is " + this.leaderId);
+						System.out.println(id + ": " + messagesSent + " "
+								+ messagesSentCost);
+
+						double[] newargs = new double[1];
+						newargs[0] = leaderId;
+						passMessage(new MSTMessageContent(
+								MSTMessageContent.MSG_LEADER, newargs));
+					}
 				}
 			}
 		}
 	}
 
 	public void changeRoot() {
+		System.out.println(this.id + " " + this.fn + " changeRoot");
 		if (se.get(bestEdge) == SE_BRANCH) {
 			try {
 				this.sendMessage(new Message(id, bestEdge,
@@ -183,14 +218,18 @@ public class MSTProcess extends Process {
 	}
 
 	public void processChangeRoot() {
+		System.out.println(this.id + " " + this.fn + " process changeRoot");
 		changeRoot();
 	}
 
 	public void processInitiate(Message m) {
+		System.out.println(this.id + " " + this.fn + " process initiate");
 		double[] args = ((MSTMessageContent) m.getContent()).getArgs();
 		ln = (int) args[0];
 		fn = args[1];
 		sn = (int) args[2];
+		System.out.println(id + " initiate from " + m.getSender() + ": " + ln
+				+ " " + fn + " " + sn);
 		inBranch = m.getSender();
 		bestEdge = -1;
 		bestWt = Double.MAX_VALUE;
@@ -220,6 +259,7 @@ public class MSTProcess extends Process {
 	}
 
 	public void test() {
+		System.out.println(this.id + " " + this.fn + " test");
 		boolean hasBasic = false;
 		Iterator<Integer> it = se.keySet().iterator();
 		double weight = Double.MAX_VALUE;
@@ -252,6 +292,7 @@ public class MSTProcess extends Process {
 	}
 
 	public void processTest(Message m) throws InterruptedException {
+		System.out.println(this.id + " " + this.fn + " process test");
 		if (sn == SN_SLEEPING) {
 			this.wakeup();
 		}
@@ -268,21 +309,21 @@ public class MSTProcess extends Process {
 		} else {
 			if (se.get(m.getSender()) == SE_BASIC) {
 				se.put(m.getSender(), SE_REJECTED);
-				if (testEdge != m.getSender()) {
-					this.sendMessage(
-							new Message(id, m.getSender(),
-									new MSTMessageContent(
-											MSTMessageContent.MSG_REJECT, null)));
-				} else {
-					this.test();
-				}
+			}
+			if (testEdge != m.getSender()) {
+				this.sendMessage(new Message(id, m.getSender(),
+						new MSTMessageContent(MSTMessageContent.MSG_REJECT,
+								null)));
+			} else {
+				this.test();
 			}
 		}
 	}
 
 	public void report() {
+		System.out.println(this.id + " " + this.fn + " report");
 		if (findCount == 0 && testEdge == -1) {
-			System.out.println("report " + inBranch + " " + id);
+			System.out.println(id + " report " + inBranch);
 			sn = SN_FOUND;
 			double[] args = new double[1];
 			args[0] = bestWt;
@@ -294,50 +335,67 @@ public class MSTProcess extends Process {
 				System.err.println("Failed to send message.\n");
 			}
 		} else {
-			System.out.println("no report " + inBranch + " " + id);
+			System.out.println(id + " no report " + inBranch);
+		}
+	}
+
+	public void processLeader(Message m) {
+		MSTMessageContent mContent = (MSTMessageContent) m.getContent();
+		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
+		System.out.println(m.getSender() + " to " + id);
+		System.out.println(id + ": " + messagesSent + " " + messagesSentCost);
+		passMessage(m.getContent());
+	}
+
+	private void passMessage(MessageContent m) {
+		Iterator<Integer> it = se.keySet().iterator();
+		while (it.hasNext()) {
+			int nextId = it.next();
+			if ((id == leaderId || nextId != inBranch) && se.get(nextId) == SE_BRANCH) {
+				try {
+					this.sendMessage(new Message(id, nextId, m));
+				} catch (InterruptedException e) {
+					System.err.println("Failed to send message.\n");
+				}
+			}
 		}
 	}
 
 	public void electLeader() throws InterruptedException {
-		//TODO
+		// TODO
 	}
 
 	@Override
 	public void broadcast(MessageContent mContent) throws InterruptedException {
-		//TODO
+		assert (id == this.leaderId);
+		passMessage(mContent);
 	}
-	
 
 	@Override
 	public void queryLeader(String queryString) throws InterruptedException {
 		// TODO Auto-generated method stub
-		
+
 	}
 		
 	public void processMessageSpecial(Message m) throws InterruptedException {
 		MSTMessageContent msg = (MSTMessageContent) m.getContent();
 		// TODO: costs need to be registered here
 		if (msg.getType() == MSTMessageContent.MSG_CONNECT) {
-			System.out.println("connect " + this.id);
 			processConnect(m);
 		} else if (msg.getType() == MSTMessageContent.MSG_ACCEPT) {
-			System.out.println("accept " + this.id);
 			processAccept(m.getSender());
 		} else if (msg.getType() == MSTMessageContent.MSG_REJECT) {
-			System.out.println("reject " + this.id);
 			processReject(m.getSender());
 		} else if (msg.getType() == MSTMessageContent.MSG_REPORT) {
-			System.out.println("report " + this.id);
 			processReport(m);
 		} else if (msg.getType() == MSTMessageContent.MSG_CHANGEROOT) {
-			System.out.println("changeroot " + this.id);
 			processChangeRoot();
 		} else if (msg.getType() == MSTMessageContent.MSG_INITIATE) {
-			System.out.println("initiate " + this.id);
 			processInitiate(m);
 		} else if (msg.getType() == MSTMessageContent.MSG_TEST) {
-			System.out.println("test " + this.id);
 			processTest(m);
+		} else if (msg.getType() == MSTMessageContent.MSG_LEADER) {
+			processLeader(m);
 		}
 	}
 
@@ -374,6 +432,6 @@ public class MSTProcess extends Process {
 	@Override
 	protected void processMessageFromLeader(Message m) throws InterruptedException {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

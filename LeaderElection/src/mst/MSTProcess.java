@@ -68,7 +68,7 @@ public class MSTProcess extends Process {
 		return minEdge;
 	}
 
-	public void wakeup() throws InterruptedException {
+	public void wakeup() {
 		System.out.println(this.id + " " + this.fn + " wakeup");
 		int minEdge = getMinEdge();
 		se.put(minEdge, SE_BRANCH);
@@ -80,7 +80,7 @@ public class MSTProcess extends Process {
 		this.sendMessage(new Message(id, minEdge, MessageType.MSG_MST_CONNECT, new MSTMessageContent(args)));
 	}
 
-	public void processConnect(Message m) throws InterruptedException {
+	public void processConnect(Message m) {
 		System.out.println(this.id + " " + this.fn + " process connect from " + m.getSender());
 		int sender = m.getSender();
 		double[] args = ((MSTMessageContent) m.getContent()).getArgs();
@@ -100,7 +100,12 @@ public class MSTProcess extends Process {
 				findCount++;
 			}
 		} else if (se.get(sender) == SE_BASIC) {
-			this.incomingMessages.put(m);
+			try {
+				this.incomingMessages.put(m);
+			} catch (InterruptedException e) {
+				System.out.println("Couldn't add incoming message back to queue");
+				e.printStackTrace();
+			}
 		} else {
 			double[] newargs = new double[3];
 			newargs[0] = ln + 1;
@@ -212,7 +217,6 @@ public class MSTProcess extends Process {
 				if (sn == SN_FIND) {
 					findCount = findCount + 1;
 				}
-				System.err.println("Failed to send message.\n");
 			}
 		}
 		if (sn == SN_FIND) {
@@ -247,7 +251,7 @@ public class MSTProcess extends Process {
 		}
 	}
 
-	public void processTest(Message m) throws InterruptedException {
+	public void processTest(Message m) {
 		System.out.println(this.id + " " + this.fn + " process test");
 		if (sn == SN_SLEEPING) {
 			this.wakeup();
@@ -258,7 +262,12 @@ public class MSTProcess extends Process {
 		double f = args[1];
 
 		if (l > ln) {
-			incomingMessages.put(m);
+			try {
+				incomingMessages.put(m);
+			} catch (InterruptedException e) {
+				System.out.println("Failure putting message back in queue");
+				e.printStackTrace();
+			}
 		} else if (f != fn) {
 			// TODO remove MessageContent here w/o causing null ptr
 
@@ -291,7 +300,7 @@ public class MSTProcess extends Process {
 		}
 	}
 
-	public void processFinish(Message m) throws InterruptedException {
+	public void processFinish(Message m) {
 		MSTMessageContent mContent = (MSTMessageContent) m.getContent();
 		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
 		System.out.println(m.getSender() + " to " + id);
@@ -318,12 +327,12 @@ public class MSTProcess extends Process {
 
 
 	@Override
-	public void broadcast(MessageType messageType, MessageContent mContent) throws InterruptedException {
+	public void broadcast(MessageType messageType, MessageContent mContent) {
 		assert (id == this.leaderId);
 		passMessage(messageType, mContent);
 	}
 	
-	protected void processLeaderBroadcastSimple(Message m) throws InterruptedException {
+	protected void processLeaderBroadcastSimple(Message m) {
 		assert(!isLeader);
 		passMessage(m.getType(), m.getContent());
 		super.processLeaderBroadcastSimpleForReceiver(m);
@@ -331,11 +340,11 @@ public class MSTProcess extends Process {
 	
 
 	@Override
-	public void queryLeader(MessageContent mContent) throws InterruptedException {
+	public void queryLeader(MessageContent mContent) {
 		sendMessage(new Message(id, inBranch, MessageType.MSG_QUERY_SIMPLE, mContent));
 	}
 
-	protected void processQuerySimple(Message m) throws InterruptedException {
+	protected void processQuerySimple(Message m) {
 		if (id == leaderId) {
 			super.processQuerySimpleForLeader(m);
 		} else {
@@ -343,7 +352,7 @@ public class MSTProcess extends Process {
 		}
 	}
 
-	public void processMessageSpecial(Message m) throws InterruptedException {
+	public void processMessageSpecial(Message m) {
 		switch (m.getType()) {
 		  case MSG_MST_CONNECT:
 			  processConnect(m);
@@ -375,12 +384,12 @@ public class MSTProcess extends Process {
 	}
 
 	@Override
-	public void triggerLeaderElection() throws InterruptedException {
+	public void triggerLeaderElection() {
 		wakeup();
 	}
 
 	@Override
-	protected void ackLeader() throws InterruptedException {
+	protected void ackLeader() {
 		acksReceived++;
 		if (acksReceived == numChildren + 1) {
 			if (id != leaderId) {
@@ -393,7 +402,7 @@ public class MSTProcess extends Process {
 	}
 
 	@Override
-	protected void processMessageAckLeader() throws InterruptedException {
+	protected void processMessageAckLeader() {
 		ackLeader();
 	}
 }

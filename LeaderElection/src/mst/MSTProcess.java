@@ -3,6 +3,7 @@ package mst;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import common.Message;
@@ -27,6 +28,8 @@ public class MSTProcess extends Process {
 	double bestWt = Double.MAX_VALUE;
 	int bestEdge = -1;
 	int inBranch = -1;
+	int messagesSent = 0;
+	double messagesSentCost = 0;
 
 	public MSTProcess(int id, int[] allProcesses,
 			HashMap<Integer, HashMap<Integer, Double>> costs,
@@ -41,6 +44,15 @@ public class MSTProcess extends Process {
 		while (it.hasNext()) {
 			int nextId = it.next();
 			this.se.put(nextId, SE_BASIC);
+		}
+	}
+
+	@Override
+	public void sendMessage(int sendId, Message m) throws InterruptedException {
+		super.sendMessage(sendId, m);
+		if (((MSTMessageContent)m.getContent()).getType() < 8) {
+			messagesSent++;
+			messagesSentCost += costs.get(id).get(sendId);
 		}
 	}
 
@@ -158,22 +170,13 @@ public class MSTProcess extends Process {
 					this.leaderId = Math.min(id, sender);
 					if (id == leaderId) {
 						System.out.println("Leader is " + this.leaderId);
+						System.out.println(id + ": " + messagesSent + " " + messagesSentCost);
 						
-						Iterator<Integer> it = se.keySet().iterator();
-						while (it.hasNext()) {
-							int nextId = it.next();
-							if (se.get(nextId) == SE_BRANCH) {
-								double[] newargs = new double[1];
-								newargs[0] = leaderId;
-								try {
-									this.sendMessage(nextId, new Message(id, nextId,
-											new MSTMessageContent(
-													MSTMessageContent.MSG_LEADER, newargs)));
-								} catch (InterruptedException e) {
-									System.err.println("Failed to send message.\n");
-								}
-							}
-						}
+						double[] newargs = new double[1];
+						newargs[0] = leaderId;
+						passMessage(new MSTMessageContent(
+								MSTMessageContent.MSG_LEADER, newargs), -1);		
+						
 					}
 				}
 			}
@@ -331,17 +334,20 @@ public class MSTProcess extends Process {
 		MSTMessageContent mContent = (MSTMessageContent) m.getContent();
 		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
 		System.out.println(m.getSender() + " to " + id);
+		System.out.println(id + ": " + messagesSent + " " + messagesSentCost);
+		double[] newargs = new double[1];
+		newargs[0] = leaderId;
+		passMessage(new MSTMessageContent(
+				MSTMessageContent.MSG_LEADER, newargs), m.getSender());		
+	}
+	
+	private void passMessage(MessageContent m, int originalSender) {
 		Iterator<Integer> it = se.keySet().iterator();
 		while (it.hasNext()) {
 			int nextId = it.next();
-			if (nextId != m.getSender() && se.get(nextId) == SE_BRANCH) {
-				System.out.println(id + " " + m.getSender() + " " + nextId);
-				double[] newargs = new double[1];
-				newargs[0] = leaderId;
+			if (nextId != originalSender && se.get(nextId) == SE_BRANCH) {
 				try {
-					this.sendMessage(nextId, new Message(id, nextId,
-							new MSTMessageContent(
-									MSTMessageContent.MSG_LEADER, newargs)));
+					this.sendMessage(nextId, new Message(id, nextId, m));
 				} catch (InterruptedException e) {
 					System.err.println("Failed to send message.\n");
 				}

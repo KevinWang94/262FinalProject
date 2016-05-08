@@ -330,11 +330,13 @@ public class MSTProcess extends Process {
 		passMessage(m.getType(), m.getContent());
 	}
 
-	private void passMessage(MessageType messageType, MessageContent m) {
+	protected boolean passMessage(MessageType messageType, MessageContent m) {
 		Iterator<Integer> it = se.keySet().iterator();
+		boolean isLeaf =  true;
 		while (it.hasNext()) {
 			int nextId = it.next();
 			if ((id == leaderId || nextId != inBranch) && se.get(nextId) == SE_BRANCH) {
+				isLeaf = false;
 				try {
 					this.sendMessage(new Message(id, nextId, messageType, m));
 				} catch (InterruptedException e) {
@@ -342,6 +344,7 @@ public class MSTProcess extends Process {
 				}
 			}
 		}
+		return isLeaf;
 	}
 
 	public void electLeader() throws InterruptedException {

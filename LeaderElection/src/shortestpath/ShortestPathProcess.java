@@ -6,12 +6,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import common.CostTracker;
 import common.Message;
-<<<<<<< HEAD
-import common.MessageContent;
-import common.Message.MessageType;
-import mst.MSTMessageContent;
-=======
->>>>>>> b32f0cd9ecab526ac50925c98bdf745d42dd7997
 import mst.MSTProcess;
 
 public class ShortestPathProcess extends MSTProcess {

@@ -306,16 +306,8 @@ public class MSTProcess extends Process {
 		while (it.hasNext()) {
 			int nextId = it.next();
 			if ((id == leaderId || nextId != inBranch) && se.get(nextId) == SE_BRANCH) {
-<<<<<<< HEAD
 				isLeaf = false;
-				try {
-					this.sendMessage(new Message(id, nextId, messageType, m));
-				} catch (InterruptedException e) {
-					System.err.println("Failed to send message.\n");
-				}
-=======
 				this.sendMessage(new Message(id, nextId, messageType, m));
->>>>>>> b32f0cd9ecab526ac50925c98bdf745d42dd7997
 			}
 		}
 		return isLeaf;

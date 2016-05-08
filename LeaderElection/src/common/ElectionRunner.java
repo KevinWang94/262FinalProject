@@ -69,6 +69,7 @@ public class ElectionRunner {
 		HashMap<Integer, HashMap<Integer, Double>> costs = new HashMap<Integer, HashMap<Integer, Double>>();
 
 		for (int i = 0; i < ids.length; i++) {
+			addToCosts(costs, ids[i], ids[i], 0.);
 			for (int j = 0; j < i; j++) {
 				double cost = Math.random() * 10;
 				costs = addToCosts(costs, ids[i], ids[j], cost);

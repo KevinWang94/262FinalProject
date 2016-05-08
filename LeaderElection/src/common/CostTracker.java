@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CostTracker {
 	
 	public enum Stage {
-		ELECTION, BROADCAST, QUERY, RESPONSE
+		ELECTION, BROADCAST, QUERY
 	}
 	
 	ConcurrentHashMap<Stage, ConcurrentHashMap<Integer, Double>> costs;

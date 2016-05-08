@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import common.CostTracker;
-import common.CostTracker.Stage;
 import common.Message;
 import common.Message.MessageType;
 import common.MessageContent;
@@ -175,7 +174,6 @@ public class BaselineProcess extends Process {
 	public void processMessageSpecial(Message m) throws InterruptedException {
 		switch (m.getType()) {
 		case MSG_BASELINE_ELECT_LEADER:
-			registerCost(Stage.ELECTION, m);
 			processMessageElectLeader(m);
 			break;
 		default:

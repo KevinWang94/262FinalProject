@@ -17,13 +17,15 @@ public abstract class Process implements Runnable {
 	protected int id;
 	protected int leaderId;
 	protected CostTracker costTracker;
-
+	protected String outfile;
+	
 	/* true iff this process has computed itself as leader */
 	protected boolean isLeader;
 
 	public Process(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages,
-			CostTracker costTracker) {
+			CostTracker costTracker,
+			String outfile) {
 		this.queues = queues;
 		this.incomingMessages = incomingMessages;
 		this.id = id;
@@ -32,6 +34,7 @@ public abstract class Process implements Runnable {
 		this.leaderId = this.ID_NONE;
 		this.isLeader = false;
 		this.costTracker = costTracker;
+		this.outfile = outfile;
 	}
 
 	public abstract void triggerLeaderElection() throws InterruptedException;

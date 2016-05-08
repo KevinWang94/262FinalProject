@@ -19,7 +19,7 @@ public class Message {
 	public static final int MSG_MST_CHANGEROOT = 5;
 	public static final int MSG_MST_INITIATE = 6;
 	public static final int MSG_MST_TEST = 7;
-	public static final int MSG_MST_LEADER = 8;
+	public static final int MSG_MST_FINISH = 8;
 	public static final int MSG_MST_QUERY_LEADER = 9;
 	
 	

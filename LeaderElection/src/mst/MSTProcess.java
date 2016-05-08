@@ -29,15 +29,14 @@ public class MSTProcess extends Process {
 	double bestWt = Double.MAX_VALUE;
 	int bestEdge = -1;
 	int inBranch = -1;
-	int messagesSent = 0;
-	double messagesSentCost = 0;
 
 	public MSTProcess(int id, int[] allProcesses,
 			HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues,
 			LinkedBlockingQueue<Message> incomingMessages,
-			CostTracker costTracker) {
-		super(id, allProcesses, costs, queues, incomingMessages, costTracker);
+			CostTracker costTracker,
+			String outfile) {
+		super(id, allProcesses, costs, queues, incomingMessages, costTracker, outfile);
 		this.ln = 0;
 		this.sn = SN_SLEEPING;
 		this.fn = -1;
@@ -46,15 +45,6 @@ public class MSTProcess extends Process {
 		while (it.hasNext()) {
 			int nextId = it.next();
 			this.se.put(nextId, SE_BASIC);
-		}
-	}
-
-	@Override
-	public void sendMessage(Message m) throws InterruptedException {
-		super.sendMessage(m);
-		if (m.getType() < 8 /* TODO LC CHECK THIS CONSTANT */) {
-			messagesSent++;
-			messagesSentCost += costs.get(id).get(m.getSender());
 		}
 	}
 
@@ -177,9 +167,7 @@ public class MSTProcess extends Process {
 						}
 
 						System.out.println("Leader is " + this.leaderId);
-						System.out.println(id + ": " + messagesSent + " "
-								+ messagesSentCost);
-
+						
 						double[] newargs = new double[1];
 						newargs[0] = leaderId;
 						try {
@@ -339,7 +327,6 @@ public class MSTProcess extends Process {
 		MSTMessageContent mContent = (MSTMessageContent) m.getContent();
 		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
 		System.out.println(m.getSender() + " to " + id);
-		System.out.println(id + ": " + messagesSent + " " + messagesSentCost);
 		passMessage(m.getType(), m.getContent());
 	}
 
@@ -399,7 +386,7 @@ public class MSTProcess extends Process {
 
 	@Override
 	public void triggerLeaderElection() throws InterruptedException {
-		// TODO Auto-generated method stub
+		wakeup();
 	}
 
 	@Override

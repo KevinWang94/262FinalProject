@@ -130,7 +130,7 @@ public class BaselineProcess extends Process {
 		}
 	}
 
-	private void processMessageQueryLeader(Message m) {
+	protected void processMessageQueryLeader(Message m) {
 		BaselineMessageContent bmc = (BaselineMessageContent) m.getContent();
 		assert (bmc.getType() == BaselineMessageContent.MSG_QUERY_LEADER);
 		assert (isLeader);
@@ -138,7 +138,7 @@ public class BaselineProcess extends Process {
 		leaderResponse(m);
 	}
 
-	private void processMessageFromLeader(Message m) {
+	protected void processMessageFromLeader(Message m) {
 		BaselineMessageContent bmc = (BaselineMessageContent) m.getContent();
 		assert (bmc.getType() == BaselineMessageContent.MSG_LEADER_RESPONSE);
 		assert (!isLeader);

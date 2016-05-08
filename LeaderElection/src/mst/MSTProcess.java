@@ -360,8 +360,15 @@ public class MSTProcess extends Process {
 
 	@Override
 	protected void processMessageQueryLeader(Message m) throws InterruptedException {
-		// TODO Auto-generated method stub
-		
+		if(isLeader) {
+			
+		// We're not the leader
+		} else {
+			Message newMessage = new Message(id, inBranch, Message.MSG_QUERY_LEADER, null);
+			sendMessage(m);
+		}
+		// TODO fix this
+
 	}
 
 	@Override

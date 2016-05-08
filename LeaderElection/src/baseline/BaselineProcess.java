@@ -6,6 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import common.CostTracker;
 import common.CostTracker.Stage;
 import common.Message;
+import common.Message.MessageType;
 import common.MessageContent;
 import common.Process;
 
@@ -42,7 +43,7 @@ public class BaselineProcess extends Process {
 	/* =========== Public API =========== */
 
 	@Override
-	public void broadcast(int messageType, MessageContent mc) throws InterruptedException {
+	public void broadcast(MessageType messageType, MessageContent mc) throws InterruptedException {
 		assert (mc instanceof BaselineMessageContent);
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
@@ -52,7 +53,7 @@ public class BaselineProcess extends Process {
 	}
 
 	@Override
-	public void queryLeader(int messageType, MessageContent mc) throws InterruptedException {
+	public void queryLeader(MessageType messageType, MessageContent mc) throws InterruptedException {
 		/*
 		 * No leader chosen yet, or is leader. This should not be possible in our implementation.
 		 */
@@ -78,7 +79,7 @@ public class BaselineProcess extends Process {
 		/* Broadcast UUID to all */
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
-				sendMessage(new Message(id, allProcesses[i], Message.MSG_BASELINE_ELECT_LEADER, new BaselineMessageContent(uuid)));
+				sendMessage(new Message(id, allProcesses[i], MessageType.MSG_BASELINE_ELECT_LEADER, new BaselineMessageContent(uuid)));
 			}
 		}
 	}
@@ -86,7 +87,7 @@ public class BaselineProcess extends Process {
 	@Override
 	protected void ackLeader() throws InterruptedException {
 		assert(this.leaderId != BaselineProcess.ID_NONE);
-		sendMessage(new Message(id, leaderId, Message.MSG_ACK_LEADER, null));
+		sendMessage(new Message(id, leaderId, MessageType.MSG_ACK_LEADER, null));
 	}
 
 	/* ======== Message receipt handlers ========= */
@@ -105,7 +106,7 @@ public class BaselineProcess extends Process {
 
 	private void processMessageElectLeader(Message m) throws InterruptedException {
 		BaselineMessageContent bmc = (BaselineMessageContent) m.getContent();
-		assert (m.getType() == Message.MSG_BASELINE_ELECT_LEADER);
+		assert (m.getType() == MessageType.MSG_BASELINE_ELECT_LEADER);
 
 		int senderUuid = bmc.getUuid();
 		assert (senderUuid != UUID_INVALID);
@@ -142,7 +143,7 @@ public class BaselineProcess extends Process {
 
 	public void processMessageSpecial(Message m) throws InterruptedException {
 		switch (m.getType()) {
-		case Message.MSG_BASELINE_ELECT_LEADER:
+		case MSG_BASELINE_ELECT_LEADER:
 			registerCost(Stage.ELECTION, m);
 			processMessageElectLeader(m);
 			break;

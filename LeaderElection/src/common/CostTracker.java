@@ -2,8 +2,6 @@ package common;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CostTracker {

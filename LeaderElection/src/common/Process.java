@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import baseline.BaselineMessageContent;
 import common.CostTracker.Stage;
+import common.Message.MessageType;
 
 public abstract class Process implements Runnable {
 	protected static final int ID_NONE = -1;
@@ -29,14 +29,14 @@ public abstract class Process implements Runnable {
 		this.id = id;
 		this.allProcesses = allProcesses;
 		this.costs = costs;
-		this.leaderId = this.ID_NONE;
+		this.leaderId = Process.ID_NONE;
 		this.isLeader = false;
 		this.costTracker = costTracker;
 	}
 
 	public abstract void triggerLeaderElection() throws InterruptedException;
-	public abstract void broadcast(int messageType, MessageContent mc) throws InterruptedException;
-	public abstract void queryLeader(int messageType, MessageContent mc) throws InterruptedException;
+	public abstract void broadcast(MessageType messageType, MessageContent mc) throws InterruptedException;
+	public abstract void queryLeader(MessageType messageType, MessageContent mc) throws InterruptedException;
 	protected abstract void ackLeader() throws InterruptedException;
 
 	/* Message handling */
@@ -51,12 +51,12 @@ public abstract class Process implements Runnable {
 		
 	public void startRunningSimple() throws InterruptedException {
 		assert(isLeader);
-		broadcast(Message.MSG_START_SIMPLE, new MessageContent("Hello!"));
+		broadcast(MessageType.MSG_START_SIMPLE, new MessageContent("Hello!"));
 	}
 	
 	private void processLeaderBroadcastSimple(Message m) throws InterruptedException {
 		assert(!isLeader);
-		queryLeader(Message.MSG_LEADER_BROADCAST_SIMPLE, new MessageContent("Why are you talking to me?"));
+		queryLeader(MessageType.MSG_LEADER_BROADCAST_SIMPLE, new MessageContent("Why are you talking to me?"));
 	}
 	
 	int numSimpleQueriesReceived = 0;
@@ -77,14 +77,14 @@ public abstract class Process implements Runnable {
 	
 	protected void processMessage(Message m) throws InterruptedException {
 		switch (m.getType()) {
-		case Message.MSG_ACK_LEADER:
+		case MSG_ACK_LEADER:
 			registerCost(Stage.ELECTION, m);
 			processMessageAckLeader();
 			break;
-		case Message.MSG_LEADER_BROADCAST_SIMPLE:
+		case MSG_LEADER_BROADCAST_SIMPLE:
 			processLeaderBroadcastSimple(m);
 			break;
-		case Message.MSG_QUERY_SIMPLE:
+		case MSG_QUERY_SIMPLE:
 			processQuerySimple(m);
 			break;
 		default:

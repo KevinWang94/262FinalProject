@@ -1,35 +1,35 @@
 package common;
 
 public class Message {
-	////// TYPES
-	public static final int MSG_ACK_LEADER = 10001;
 	
-	public static final int MSG_START_SIMPLE = 10002;
-	public static final int MSG_LEADER_BROADCAST_SIMPLE = 10003;
-	public static final int MSG_QUERY_SIMPLE = 10004;
-	
-	// baseline only 
-	public static final int MSG_BASELINE_ELECT_LEADER = 101;
-	
-	// MST only
-	public static final int MSG_MST_CONNECT = 1;
-	public static final int MSG_MST_ACCEPT = 2;
-	public static final int MSG_MST_REJECT = 3;
-	public static final int MSG_MST_REPORT = 4;
-	public static final int MSG_MST_CHANGEROOT = 5;
-	public static final int MSG_MST_INITIATE = 6;
-	public static final int MSG_MST_TEST = 7;
-	public static final int MSG_MST_LEADER = 8;
-	public static final int MSG_MST_QUERY_LEADER = 9;
-	
+	public enum MessageType {
+		/* common */
+		MSG_ACK_LEADER,
+		MSG_START_SIMPLE,
+		MSG_LEADER_BROADCAST_SIMPLE,
+		MSG_QUERY_SIMPLE,
+		
+		/* baseline */
+		MSG_BASELINE_ELECT_LEADER,
+		
+		/* mst */
+		MSG_MST_CONNECT,
+		MSG_MST_ACCEPT,
+		MSG_MST_REJECT,
+		MSG_MST_REPORT,
+		MSG_MST_CHANGEROOT,
+		MSG_MST_INITIATE,
+		MSG_MST_TEST,
+		MSG_MST_LEADER,
+	}
 	
 	private int sender;
 	private int receiver;
-	private int type;
+	private MessageType type;
 	
 	private MessageContent content;
 
-	public Message(int sender, int receiver, int type, MessageContent content) {
+	public Message(int sender, int receiver, MessageType type, MessageContent content) {
 		this.sender = sender;
 		this.receiver = receiver;
 		this.content = content;
@@ -44,7 +44,17 @@ public class Message {
 		return receiver;
 	}
 	
-	public int getType() {
+	public boolean isMSTInitialization() {
+		return (type == MessageType.MSG_MST_CONNECT ||
+				type == MessageType.MSG_MST_ACCEPT ||
+				type == MessageType.MSG_MST_REJECT ||
+				type == MessageType.MSG_MST_REPORT ||
+				type == MessageType.MSG_MST_CHANGEROOT ||
+				type == MessageType.MSG_MST_INITIATE ||
+				type == MessageType.MSG_MST_TEST);
+	}
+	
+	public MessageType getType() {
 		return type;
 	}
 	

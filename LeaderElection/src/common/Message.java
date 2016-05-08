@@ -20,7 +20,7 @@ public class Message {
 		MSG_MST_CHANGEROOT,
 		MSG_MST_INITIATE,
 		MSG_MST_TEST,
-		MSG_MST_LEADER,
+		MSG_MST_FINISH,
 	}
 	
 	private int sender;

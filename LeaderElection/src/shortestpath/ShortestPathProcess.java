@@ -155,7 +155,7 @@ public class ShortestPathProcess extends MSTProcess {
 		sendFinalPaths(m.getSender());
 	}
 	
-	public void processMessageSpecial(Message m) throws InterruptedException {
+	public void processMessageSpecial(Message m) {
 		switch (m.getType()) {
 			case MSG_PATH_PARTIAL:
 				processPathPartial(m);

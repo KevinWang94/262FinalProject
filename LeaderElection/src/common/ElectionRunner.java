@@ -4,13 +4,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import shortestpath.ShortestPathProcess;
 import mst.MSTProcess;
 import baseline.BaselineProcess;
 
 public class ElectionRunner {
 	
 	public enum Model {
-		BASELINE, MST
+		BASELINE, MST, SHORTESTPATH
 	}
 
 	public static HashMap<Integer, HashMap<Integer, Double>> addToCosts(
@@ -62,7 +63,7 @@ public class ElectionRunner {
 			queues.put(ids[i], new LinkedBlockingQueue<Message>());
 		}
 
-		CostTracker tracker = new CostTracker(ids, outfile);
+		CostTracker tracker = new CostTracker(ids);
 		
 		for (int i = 0; i < ids.length; i++) {
 			// System.out.println(ids[i]);
@@ -72,10 +73,14 @@ public class ElectionRunner {
 			Process curr = null;
 			switch (m) {
 			case MST:
-				curr = new MSTProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker);
+				curr = new MSTProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
 				break;
 			case BASELINE:
-				curr = new BaselineProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker);
+				curr = new BaselineProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
+				break;
+			case SHORTESTPATH:
+				curr = new ShortestPathProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
+				break;
 			}
 			(new Thread(curr)).start();
 			processes.put(ids[i], curr);
@@ -93,6 +98,7 @@ public class ElectionRunner {
 		int[] ids = genIds(Integer.parseInt(args[0]));
 		HashMap<Integer, HashMap<Integer, Double>> costs = genCosts(ids);
 		instantiateAndRun(ids, costs, Model.MST, args[1]);
-		//instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
+		instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
+		instantiateAndRun(ids, costs, Model.SHORTESTPATH, args[3]);	
 	}
 }

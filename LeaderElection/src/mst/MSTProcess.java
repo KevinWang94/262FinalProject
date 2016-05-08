@@ -29,8 +29,6 @@ public class MSTProcess extends Process {
 	double bestWt = Double.MAX_VALUE;
 	int bestEdge = -1;
 	int inBranch = -1;
-	int messagesSent = 0;
-	double messagesSentCost = 0;
 
 	public MSTProcess(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages,
@@ -44,15 +42,6 @@ public class MSTProcess extends Process {
 		while (it.hasNext()) {
 			int nextId = it.next();
 			this.se.put(nextId, SE_BASIC);
-		}
-	}
-
-	@Override
-	public void sendMessage(Message m) {
-		super.sendMessage(m);
-		if (m.isMSTInitialization()) {
-			messagesSent++;
-			messagesSentCost += costs.get(id).get(m.getSender());
 		}
 	}
 
@@ -170,11 +159,9 @@ public class MSTProcess extends Process {
 						}
 
 						System.out.println("Leader is " + this.leaderId);
-						System.out.println(id + ": " + messagesSent + " " + messagesSentCost);
-
 						double[] newargs = new double[1];
 						newargs[0] = leaderId;
-						passMessage(MessageType.MSG_MST_LEADER, new MSTMessageContent(newargs));
+						this.sendMessage(new Message(id, leaderId, MessageType.MSG_MST_FINISH, new MSTMessageContent(newargs)));
 					}
 				}
 			}
@@ -306,11 +293,10 @@ public class MSTProcess extends Process {
 		}
 	}
 
-	public void processLeader(Message m) {
+	public void processFinish(Message m) {
 		MSTMessageContent mContent = (MSTMessageContent) m.getContent();
 		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
 		System.out.println(m.getSender() + " to " + id);
-		System.out.println(id + ": " + messagesSent + " " + messagesSentCost);
 		passMessage(m.getType(), m.getContent());
 	}
 
@@ -342,30 +328,38 @@ public class MSTProcess extends Process {
 	public void processMessageSpecial(Message m) throws InterruptedException {
 		// TODO: costs need to be registered here
 		switch (m.getType()) {
-		case MSG_MST_CONNECT:
-			processConnect(m);
-		case MSG_MST_ACCEPT:
-			processAccept(m.getSender());
-		case MSG_MST_REJECT:
-			processReject(m.getSender());
-		case MSG_MST_REPORT:
+		  case MSG_MST_CONNECT:
+			  processConnect(m);
+			  break;
+		  case MSG_MST_ACCEPT:
+			  processAccept(m.getSender());
+			  break;
+		  case MSG_MST_REJECT:
+			  processReject(m.getSender());
+			  break;
+		  case MSG_MST_REPORT:
 			processReport(m);
-		case MSG_MST_CHANGEROOT:
+			break;
+		  case MSG_MST_CHANGEROOT:
 			processChangeRoot();
-		case MSG_MST_INITIATE:
+			break;
+		  case MSG_MST_INITIATE:
 			processInitiate(m);
-		case MSG_MST_TEST:
+			break;
+		  case MSG_MST_TEST:
 			processTest(m);
-		case MSG_MST_LEADER:
-			processLeader(m);
-		default:
+			break;
+		  case MSG_MST_FINISH:
+			processFinish(m);
+			break;
+		  default:
 			// TODO FAIL
 		}
 	}
 
 	@Override
 	public void triggerLeaderElection() throws InterruptedException {
-		// TODO Auto-generated method stub
+		wakeup();
 	}
 
 	@Override

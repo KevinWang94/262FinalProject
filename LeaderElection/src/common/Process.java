@@ -31,7 +31,7 @@ public abstract class Process implements Runnable {
 		this.id = id;
 		this.allProcesses = allProcesses;
 		this.costs = costs;
-		this.leaderId = this.ID_NONE;
+		this.leaderId = Process.ID_NONE;
 		this.isLeader = false;
 		this.costTracker = costTracker;
 		this.outfile = outfile;

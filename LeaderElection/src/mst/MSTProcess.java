@@ -153,7 +153,9 @@ public class MSTProcess extends Process {
 					changeRoot();
 				} else if ((w == bestWt) && (w == Double.MAX_VALUE)) {
 					this.leaderId = Math.min(id, sender);
+
 					if (id == leaderId) {
+						this.isLeader = true;
 						for (int i = 0; i < allProcesses.length; i++) {
 							for (int j = i + 1; j < allProcesses.length; j++) {
 								System.out.println(allProcesses[i] + " " + allProcesses[j] + ": "

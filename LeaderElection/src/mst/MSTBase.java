@@ -166,7 +166,7 @@ public abstract class MSTBase extends Process {
 							}
 						}
 
-						System.out.println("Leader is " + this.leaderId);
+						System.out.println("MST Leader is " + this.leaderId);
 						double[] newargs = new double[1];
 						newargs[0] = leaderId;
 						this.sendMessage(new Message(id, leaderId, MessageType.MSG_MST_FINISH, new MSTMessageContent(newargs)));

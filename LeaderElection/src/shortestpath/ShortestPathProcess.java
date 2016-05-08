@@ -15,7 +15,8 @@ import mst.MSTBase;
 import mst.MSTProcess;
 
 public class ShortestPathProcess extends MSTBase {
-
+	private boolean DEBUG = true;
+	
 	public enum ShortestPathState {
 		STATE_TRANSMIT,
 		STATE_RECEIVING,
@@ -111,7 +112,6 @@ public class ShortestPathProcess extends MSTBase {
 	
 	public void augmentPd(HashMap<Pair, PathInfo> newPd) {
 		for (Pair pair : newPd.keySet()) {
-			System.out.println(newPd.get(pair).getCost() + " " + pd.get(pair).getCost());
 			if (newPd.get(pair).getCost() < pd.get(pair).getCost()) {
 				pd.put(pair, newPd.get(pair));
 			}
@@ -159,16 +159,28 @@ public class ShortestPathProcess extends MSTBase {
 
 		leaderId = bestId;
 		isLeader = (leaderId == id);
-		printDebugInfo();
 	}
 	
 	public void printDebugInfo() {
 		System.out.println("Leader: " + leaderId);
+		System.out.println("Costs: ");
+		for (Integer i : costs.keySet()) {
+			for (Integer j : costs.get(i).keySet()) {
+				System.out.println(i + " " + j + " " + costs.get(i).get(j));
+			}
+		}
+		System.out.println("Path Costs: ");
+		for (Integer i : costs.keySet()) {
+			for (Integer j : costs.get(i).keySet()) {
+				Pair pair = new Pair(i,j);
+				System.out.println(i + " " + j + " " + pd.get(pair).getCost());
+			}
+		}
 	}
 	
 	public void sendFinalPaths(int noSendId) {
 		for (Integer i : se.keySet()) {
-			if ((se.get(i) == MSTProcess.SE_BRANCH) && (id != noSendId)) {
+			if ((se.get(i) == MSTProcess.SE_BRANCH) && (i != noSendId)) {
 				this.sendMessage(new Message(id, i, MessageType.MSG_PATH_FINAL,
 						new ShortestPathMessageContent(pd)));				
 			}
@@ -187,6 +199,8 @@ public class ShortestPathProcess extends MSTBase {
 		}
 		if (count == numBranch) {
 			state = ShortestPathState.STATE_SATURATED;
+			if (DEBUG) 
+				printDebugInfo();
 			sendFinalPaths(-1);
 		}
 	}

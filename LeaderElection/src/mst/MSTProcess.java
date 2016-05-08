@@ -23,12 +23,12 @@ public class MSTProcess extends Process {
 	int ln;
 	int sn;
 	double fn;
-	HashMap<Integer, Integer> se;
+	protected HashMap<Integer, Integer> se;
 	int findCount = 0;
 	int testEdge = -1; // -1 is used as nil value
 	double bestWt = Double.MAX_VALUE;
 	int bestEdge = -1;
-	int inBranch = -1;
+	protected int inBranch = -1;
 
 	public MSTProcess(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages,

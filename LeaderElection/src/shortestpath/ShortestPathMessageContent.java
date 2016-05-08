@@ -1,21 +1,22 @@
 package shortestpath;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import util.Pair;
+import util.PathInfo;
 import common.MessageContent;
 
 public class ShortestPathMessageContent extends MessageContent {
-	private HashMap<Pair, ArrayList<Integer>> paths;
+	
+	private HashMap<Pair, PathInfo> paths;
 
 	public ShortestPathMessageContent(
-			HashMap<Pair, ArrayList<Integer>> paths) {
+			HashMap<Pair, PathInfo> paths) {
 		super();
 		this.paths = paths;
 	}
 	
-	public HashMap<Pair, ArrayList<Integer>> getPaths() {
+	public HashMap<Pair, PathInfo> getPaths() {
 		return paths;
 	}
 }

@@ -348,7 +348,7 @@ public class MSTProcess extends Process {
 		Iterator<Integer> it = se.keySet().iterator();
 		while (it.hasNext()) {
 			int nextId = it.next();
-			if (nextId != inBranch && se.get(nextId) == SE_BRANCH) {
+			if ((id == leaderId || nextId != inBranch) && se.get(nextId) == SE_BRANCH) {
 				try {
 					this.sendMessage(nextId, new Message(id, nextId, m));
 				} catch (InterruptedException e) {

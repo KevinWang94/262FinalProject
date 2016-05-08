@@ -23,7 +23,7 @@ public class MSTElection implements ElectionInterface {
 	}
 	
 	public static void main(String[] args) {
-		int n = 10;
+		int n = 4;
 		HashMap<Integer, LinkedBlockingQueue<Message>> queues = new HashMap<Integer, LinkedBlockingQueue<Message>>();
 		HashMap<Integer, Process> processes = new HashMap<Integer, Process>();
 		int[] ids = new int[n];

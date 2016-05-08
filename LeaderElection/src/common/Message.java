@@ -5,7 +5,6 @@ public class Message {
 	public enum MessageType {
 		/* common */
 		MSG_ACK_LEADER,
-		MSG_START_SIMPLE,
 		MSG_LEADER_BROADCAST_SIMPLE,
 		MSG_QUERY_SIMPLE,
 		
@@ -25,7 +24,6 @@ public class Message {
 		/* path */
 		MSG_PATH_PARTIAL,
 		MSG_PATH_FINAL,
-		
 	}
 	
 	private int sender;
@@ -45,7 +43,7 @@ public class Message {
 		return sender;
 	}
 	
-	public int getReciever() {
+	public int getReceiver() {
 		return receiver;
 	}
 	

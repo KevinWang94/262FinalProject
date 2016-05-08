@@ -3,7 +3,6 @@ package shortestpath;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import util.Pair;
@@ -11,7 +10,6 @@ import util.PathInfo;
 import common.CostTracker;
 import common.Message;
 import common.Message.MessageType;
-import mst.MSTMessageContent;
 import mst.MSTProcess;
 
 public class ShortestPathProcess extends MSTProcess {
@@ -90,7 +88,8 @@ public class ShortestPathProcess extends MSTProcess {
 	public void transmittingNodeProcess() {
 		int sendId = -1;
 		for (Integer i : se.keySet()) {
-			if (!seen.contains(i)) {
+			if ((se.get(i) == MSTProcess.SE_BRANCH) && 
+					(!seen.contains(i))) {
 				sendId = i;
 				break;
 			}
@@ -101,12 +100,62 @@ public class ShortestPathProcess extends MSTProcess {
 				new ShortestPathMessageContent(pd)));
 	}
 	
+	public void augmentPd(HashMap<Pair, PathInfo> newPd) {
+		for (Pair pair : newPd.keySet()) {
+			if (newPd.get(pair).getCost() < pd.get(pair).getCost()) {
+				pd.put(pair, newPd.get(pair));
+			}
+		}
+		for (Pair pair : pd.keySet()) {
+			for (Integer i : allProcesses) {
+				int fst = pair.fst();
+				int snd = pair.snd();
+				Pair pair1 = new Pair(fst, i);
+				Pair pair2 = new Pair(i, snd);
+				double cost1 = pd.get(pair1).getCost();
+				double cost2 = pd.get(pair2).getCost();
+				double newCost = cost1 + cost2;
+				if (newCost < pd.get(pair).getCost()) {
+					ArrayList<Integer> newPath = pd.get(pair1).getPath();
+					newPath.addAll(pd.get(pair2).getPath());
+					pd.put(pair, new PathInfo(newPath, newCost));
+				}
+			}
+		}
+	}
+	
+	public void sendFinalPaths(int noSendId) {
+		for (Integer i : se.keySet()) {
+			if ((se.get(i) == MSTProcess.SE_BRANCH) && (id != noSendId)) {
+				this.sendMessage(new Message(id, i, MessageType.MSG_PATH_FINAL,
+						new ShortestPathMessageContent(pd)));				
+			}
+		}
+	}
+	
 	public void processPathPartial(Message m) {
-		if (count == numChildren)
+		ShortestPathMessageContent mContent = (ShortestPathMessageContent) m.getContent();
+		augmentPd(mContent.getPaths());
+		count++;
+		seen.add(m.getSender());
+		if (count == numChildren) {
+			state = ShortestPathState.STATE_TRANSMIT;
+			transmittingNodeProcess();
+		}
+		if (count == (numChildren + 1)) {
+			state = ShortestPathState.STATE_SATURATED;
+			sendFinalPaths(-1);
+		}
+	}
+	
+	public void processPathFinal(Message m) {
+		ShortestPathMessageContent mContent = (ShortestPathMessageContent) m.getContent();
+		HashMap<Pair, PathInfo> paths = mContent.getPaths();
+		pd = paths;
+		sendFinalPaths(m.getSender());
 	}
 	
 	public void processMessageSpecial(Message m) throws InterruptedException {
-		// TODO: costs need to be registered here
 		switch (m.getType()) {
 			case MSG_PATH_PARTIAL:
 				processPathPartial(m);

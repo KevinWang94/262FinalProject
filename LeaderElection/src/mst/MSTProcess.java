@@ -3,11 +3,11 @@ package mst;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import common.CostTracker;
 import common.Message;
+import common.Message.MessageType;
 import common.MessageContent;
 import common.Process;
 
@@ -78,7 +78,7 @@ public class MSTProcess extends Process {
 		findCount = 0;
 		double[] args = new double[1];
 		args[0] = 0;
-		this.sendMessage(new Message(id, minEdge, Message.MSG_MST_CONNECT,
+		this.sendMessage(new Message(id, minEdge, MessageType.MSG_MST_CONNECT,
 				new MSTMessageContent(args)));
 	}
 
@@ -98,7 +98,7 @@ public class MSTProcess extends Process {
 			newargs[0] = ln;
 			newargs[1] = fn;
 			newargs[2] = sn;
-			this.sendMessage(new Message(id, sender, Message.MSG_MST_INITIATE,
+			this.sendMessage(new Message(id, sender, MessageType.MSG_MST_INITIATE,
 					new MSTMessageContent(newargs)));
 			if (sn == SN_FIND) {
 				findCount++;
@@ -110,7 +110,7 @@ public class MSTProcess extends Process {
 			newargs[0] = ln + 1;
 			newargs[1] = costs.get(id).get(sender);
 			newargs[2] = SN_FIND;
-			this.sendMessage(new Message(id, sender, Message.MSG_MST_INITIATE,
+			this.sendMessage(new Message(id, sender, MessageType.MSG_MST_INITIATE,
 					new MSTMessageContent(newargs)));
 		}
 	}
@@ -171,7 +171,7 @@ public class MSTProcess extends Process {
 						double[] newargs = new double[1];
 						newargs[0] = leaderId;
 						try {
-							this.sendMessage(new Message(id, leaderId, Message.MSG_MST_FINISH, new MSTMessageContent(newargs)));
+							this.sendMessage(new Message(id, leaderId, MessageType.MSG_MST_FINISH, new MSTMessageContent(newargs)));
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -186,7 +186,7 @@ public class MSTProcess extends Process {
 		System.out.println(this.id + " " + this.fn + " changeRoot");
 		if (se.get(bestEdge) == SE_BRANCH) {
 			try {
-				this.sendMessage(new Message(id, bestEdge, Message.MSG_MST_CHANGEROOT,
+				this.sendMessage(new Message(id, bestEdge, MessageType.MSG_MST_CHANGEROOT,
 						new MSTMessageContent(null)));
 			} catch (InterruptedException e) {
 				System.err.println("Failed to send message.\n");
@@ -195,7 +195,7 @@ public class MSTProcess extends Process {
 			double[] args = new double[1];
 			args[0] = ln;
 			try {
-				this.sendMessage(new Message(id, bestEdge, Message.MSG_MST_CONNECT,
+				this.sendMessage(new Message(id, bestEdge, MessageType.MSG_MST_CONNECT,
 						new MSTMessageContent(args)));
 			} catch (InterruptedException e) {
 				System.err.println("Failed to send message.\n");
@@ -229,7 +229,7 @@ public class MSTProcess extends Process {
 				newargs[1] = fn;
 				newargs[2] = sn;
 				try {
-					this.sendMessage(new Message(id, nextId, Message.MSG_MST_INITIATE,
+					this.sendMessage(new Message(id, nextId, MessageType.MSG_MST_INITIATE,
 							new MSTMessageContent(newargs)));
 					if (sn == SN_FIND) {
 						findCount = findCount + 1;
@@ -265,7 +265,7 @@ public class MSTProcess extends Process {
 			newargs[0] = ln;
 			newargs[1] = fn;
 			try {
-				this.sendMessage(new Message(id, testEdge, Message.MSG_MST_TEST,
+				this.sendMessage(new Message(id, testEdge, MessageType.MSG_MST_TEST,
 						new MSTMessageContent(newargs)));
 			} catch (InterruptedException e) {
 				System.err.println("Failed to send message.\n");
@@ -290,14 +290,14 @@ public class MSTProcess extends Process {
 			incomingMessages.put(m);
 		} else if (f != fn) {
 			// TODO remove MessageContent here w/o causing null ptr
-			this.sendMessage(new Message(id, m.getSender(), Message.MSG_MST_ACCEPT, 
+			this.sendMessage(new Message(id, m.getSender(), MessageType.MSG_MST_ACCEPT, 
 					new MSTMessageContent(null)));
 		} else {
 			if (se.get(m.getSender()) == SE_BASIC) {
 				se.put(m.getSender(), SE_REJECTED);
 			}
 			if (testEdge != m.getSender()) {
-				this.sendMessage(new Message(id, m.getSender(), Message.MSG_MST_REJECT, 
+				this.sendMessage(new Message(id, m.getSender(), MessageType.MSG_MST_REJECT, 
 						new MSTMessageContent(null))); // TODO remove MessageContent here w/o causing null ptr
 			} else {
 				this.test();
@@ -313,7 +313,7 @@ public class MSTProcess extends Process {
 			double[] args = new double[1];
 			args[0] = bestWt;
 			try {
-				this.sendMessage(new Message(id, inBranch, Message.MSG_MST_REPORT, 
+				this.sendMessage(new Message(id, inBranch, MessageType.MSG_MST_REPORT, 
 						new MSTMessageContent(args)));
 			} catch (InterruptedException e) {
 				System.err.println("Failed to send message.\n");
@@ -330,7 +330,7 @@ public class MSTProcess extends Process {
 		passMessage(m.getType(), m.getContent());
 	}
 
-	private void passMessage(int messageType, MessageContent m) {
+	private void passMessage(MessageType messageType, MessageContent m) {
 		Iterator<Integer> it = se.keySet().iterator();
 		while (it.hasNext()) {
 			int nextId = it.next();
@@ -349,42 +349,41 @@ public class MSTProcess extends Process {
 	}
 
 	@Override
-	public void broadcast(int messageType, MessageContent mContent) throws InterruptedException {
+	public void broadcast(MessageType messageType, MessageContent mContent) throws InterruptedException {
 		assert (id == this.leaderId);
 		passMessage(messageType, mContent);
 	}
 
 	@Override
-	public void queryLeader(int messageType, MessageContent mContent) throws InterruptedException {
+	public void queryLeader(MessageType messageType, MessageContent mContent) throws InterruptedException {
 		// TODO Auto-generated method stub
-
 	}
 		
 	public void processMessageSpecial(Message m) throws InterruptedException {
 		// TODO: costs need to be registered here
 		switch (m.getType()) {
-		  case Message.MSG_MST_CONNECT:
+		  case MSG_MST_CONNECT:
 			  processConnect(m);
 			  break;
-		  case Message.MSG_MST_ACCEPT:
+		  case MSG_MST_ACCEPT:
 			  processAccept(m.getSender());
 			  break;
-		  case Message.MSG_MST_REJECT:
-			processReject(m.getSender());
-			break;
-		  case Message.MSG_MST_REPORT:
+		  case MSG_MST_REJECT:
+			  processReject(m.getSender());
+			  break;
+		  case MSG_MST_REPORT:
 			processReport(m);
 			break;
-		  case Message.MSG_MST_CHANGEROOT:
+		  case MSG_MST_CHANGEROOT:
 			processChangeRoot();
 			break;
-		  case Message.MSG_MST_INITIATE:
+		  case MSG_MST_INITIATE:
 			processInitiate(m);
 			break;
-		  case Message.MSG_MST_TEST:
+		  case MSG_MST_TEST:
 			processTest(m);
 			break;
-		  case Message.MSG_MST_FINISH:
+		  case MSG_MST_FINISH:
 			processFinish(m);
 			break;
 		  default:

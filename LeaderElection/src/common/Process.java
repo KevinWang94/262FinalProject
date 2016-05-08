@@ -40,9 +40,8 @@ public abstract class Process implements Runnable {
 	protected abstract void ackLeader() throws InterruptedException;
 
 	/* Message handling */
-	protected abstract void processMessageAckLeader() throws InterruptedException;
 	protected abstract void processMessageSpecial(Message m) throws InterruptedException;
-	
+	protected abstract void processMessageAckLeader() throws InterruptedException;
 	
 	/************************************************************ 
 	 * SIMPLE WORKLOAD
@@ -66,7 +65,7 @@ public abstract class Process implements Runnable {
 			costTracker.dumpCosts();
 		}
 	}
-
+	
 	protected void registerCost(Stage s, Message m) {
 		this.costTracker.registerCosts(s, id, costs.get(id).get(m.getSender()));
 	}

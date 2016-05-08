@@ -22,19 +22,19 @@ public class MSTProcess extends MSTBase {
 		MSTMessageContent mContent = (MSTMessageContent) m.getContent();
 		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
 		System.out.println(m.getSender() + " to " + id);
-		passMessage(m.getType(), m.getContent());
+		passMessageMST(m.getType(), m.getContent());
 		ackLeader();
 	}
 
 	@Override
 	public void broadcast(MessageType messageType, MessageContent mContent) {
 		assert (id == this.leaderId);
-		passMessage(messageType, mContent);
+		passMessageMST(messageType, mContent);
 	}
 	
 	protected void processLeaderBroadcastSimple(Message m) {
 		assert(!isLeader);
-		passMessage(m.getType(), m.getContent());
+		passMessageMST(m.getType(), m.getContent());
 		super.processLeaderBroadcastSimpleForReceiver(m);
 	}
 	

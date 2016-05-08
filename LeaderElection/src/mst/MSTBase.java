@@ -298,7 +298,7 @@ public abstract class MSTBase extends Process {
 		}
 	}
 	
-	protected boolean passMessage(MessageType messageType, MessageContent m) {
+	protected boolean passMessageMST(MessageType messageType, MessageContent m) {
 		Iterator<Integer> it = se.keySet().iterator();
 		boolean isLeaf =  true;
 		int count = 0;

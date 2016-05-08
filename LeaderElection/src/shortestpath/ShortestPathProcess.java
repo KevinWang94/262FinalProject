@@ -3,6 +3,7 @@ package shortestpath;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import util.Pair;
@@ -34,6 +35,7 @@ public class ShortestPathProcess extends MSTBase {
 	int count;
 	HashSet<Integer> seen;
 	private LeaderMethod method;
+	int acksReceived = 0;
 	
 	public ShortestPathProcess(int id, int[] allProcesses,
 			HashMap<Integer, HashMap<Integer, Double>> costs,
@@ -53,7 +55,7 @@ public class ShortestPathProcess extends MSTBase {
 		System.out.println(m.getSender() + " to " + id);
 		
 		initializePDMatrix();
-		boolean isLeaf = passMessage(m.getType(), m.getContent());
+		boolean isLeaf = passMessageMST(m.getType(), m.getContent());
 		if (isLeaf) {
 			state = ShortestPathState.STATE_TRANSMIT;
 		} else {
@@ -186,6 +188,7 @@ public class ShortestPathProcess extends MSTBase {
 			}
 		}
 		chooseLeader();
+		ackLeader();
 	}
 	
 	public void processPathPartial(Message m) {
@@ -234,40 +237,61 @@ public class ShortestPathProcess extends MSTBase {
 	public void triggerLeaderElection() {
 		wakeup();
 	}
+	
+	protected void passMessagePath(MessageType messageType, MessageContent m, int sender) {
+		for (Integer nextId : se.keySet()) {
+			if ((nextId != sender) && se.get(nextId) == SE_BRANCH) {
+				this.sendMessage(new Message(id, nextId, messageType, m));
+			}
+		}
+	}
 
 	@Override
 	public void broadcast(MessageType messageType, MessageContent mc) {
-		// TODO Auto-generated method stub
-		
+		assert (id == this.leaderId);
+		passMessagePath(messageType, mc, -1);
 	}
 
 	@Override
 	public void queryLeader(MessageContent mc) {
-		// TODO Auto-generated method stub
+		assert(!isLeader);
 		
+		ArrayList<Integer> path = pd.get(new Pair(id, leaderId)).getPath();
+		sendMessage(new Message(id, path.get(1), MessageType.MSG_QUERY_SIMPLE, mc));
 	}
-
+	
 	@Override
 	protected void ackLeader() {
-		// TODO Auto-generated method stub
-		
+		if (!isLeader) {
+			ArrayList<Integer> path = pd.get(new Pair(id, leaderId)).getPath();
+			sendMessage(new Message(id, path.get(1), MessageType.MSG_ACK_LEADER, null));
+		} else {
+			acksReceived++;
+			if (acksReceived == numBranch) {
+				System.out.println("Leader acked!");
+				startRunningSimple();			
+			}
+		}
 	}
 
 	@Override
 	protected void processMessageAckLeader() {
-		// TODO Auto-generated method stub
-		
+		ackLeader();
 	}
 
 	@Override
 	protected void processLeaderBroadcastSimple(Message m) {
-		// TODO Auto-generated method stub
-		
+		assert(!isLeader);
+		passMessagePath(m.getType(), m.getContent(), m.getSender());
+		super.processLeaderBroadcastSimpleForReceiver(m);
 	}
 
 	@Override
 	protected void processQuerySimple(Message m) {
-		// TODO Auto-generated method stub
-		
+		if (id == leaderId) {
+			super.processQuerySimpleForLeader(m);
+		} else {
+			queryLeader(m.getContent());
+		}
 	}
 }

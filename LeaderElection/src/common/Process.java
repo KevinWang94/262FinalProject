@@ -80,7 +80,12 @@ public abstract class Process implements Runnable {
 		case MSG_MST_FINISH:
 		case MSG_BASELINE_ELECT_LEADER:
 		case MSG_ACK_LEADER:
+		case MSG_PATH_PARTIAL:
+		case MSG_PATH_FINAL:
 			s = Stage.ELECTION;
+			break;
+		case MSG_LEADER_BROADCAST_SIMPLE:
+			s = Stage.BROADCAST;
 			break;
 		case MSG_QUERY_SIMPLE:
 			s = Stage.QUERY;

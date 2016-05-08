@@ -69,7 +69,6 @@ public class ElectionRunner {
 		HashMap<Integer, HashMap<Integer, Double>> costs = new HashMap<Integer, HashMap<Integer, Double>>();
 
 		for (int i = 0; i < ids.length; i++) {
-			addToCosts(costs, ids[i], ids[i], 0.);
 			for (int j = 0; j < i; j++) {
 				double cost = Math.random() * 10;
 				costs = addToCosts(costs, ids[i], ids[j], cost);
@@ -136,8 +135,8 @@ public class ElectionRunner {
 	public static void main(String[] args) {
 		int[] ids = genIds(Integer.parseInt(args[0]));
 		HashMap<Integer, HashMap<Integer, Double>> costs = genCosts(ids);
-		instantiateAndRun(ids, costs, Model.MST, args[1]);
-		//instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
+		//instantiateAndRun(ids, costs, Model.MST, args[1]);
+		instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
 		//instantiateAndRun(ids, costs, Model.SHORTESTPATH, args[3]);	
 	}
 }

@@ -39,7 +39,7 @@ public class BaselineProcess extends Process {
 	/* =========== Public API =========== */
 
 	@Override
-	public void broadcast(MessageType messageType, MessageContent mc) throws InterruptedException {
+	public void broadcast(MessageType messageType, MessageContent mc) {
 		assert (mc instanceof BaselineMessageContent);
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
@@ -49,7 +49,7 @@ public class BaselineProcess extends Process {
 	}
 
 	@Override
-	public void queryLeader(MessageContent mc) throws InterruptedException {
+	public void queryLeader(MessageContent mc) {
 		/*
 		 * No leader chosen yet, or is leader. This should not be possible in our implementation.
 		 */
@@ -60,14 +60,14 @@ public class BaselineProcess extends Process {
 	}
 
 	@Override
-	public void triggerLeaderElection() throws InterruptedException {
+	public void triggerLeaderElection() {
 		broadcastUuidForElection();
 	}
 
 
 	/* ======== Message sending helpers ========= */
 
-	private void broadcastUuidForElection() throws InterruptedException {
+	private void broadcastUuidForElection() {
 		/* You should only broadcast once */
 		assert (!broadcastedUuid);
 		broadcastedUuid = true;
@@ -81,7 +81,7 @@ public class BaselineProcess extends Process {
 	}
 
 	@Override
-	protected void ackLeader() throws InterruptedException {
+	protected void ackLeader() {
 		assert(this.leaderId != BaselineProcess.ID_NONE);
 		sendMessage(new Message(id, leaderId, MessageType.MSG_ACK_LEADER, null));
 	}
@@ -89,11 +89,11 @@ public class BaselineProcess extends Process {
 	/* ======== Message receipt handlers ========= */
 
 	// TODO MICHELLE where to put this
-	protected void processLeaderBroadcastSimple(Message m) throws InterruptedException {
+	protected void processLeaderBroadcastSimple(Message m) {
 		processLeaderBroadcastSimpleForReceiver(m);
 	}
 	
-	protected void processQuerySimple(Message m) throws InterruptedException {
+	protected void processQuerySimple(Message m) {
 		super.processQuerySimpleForLeader(m);
 	}
 
@@ -111,7 +111,7 @@ public class BaselineProcess extends Process {
 	 * 
 	 * @param  m	the message received
 	 */
-	private void processMessageElectLeader(Message m) throws InterruptedException {
+	private void processMessageElectLeader(Message m) {
 		assert (m.getType() == MessageType.MSG_BASELINE_ELECT_LEADER);
 
 		BaselineMessageContent bmc = (BaselineMessageContent) m.getContent();
@@ -163,7 +163,7 @@ public class BaselineProcess extends Process {
 	 * that it is the leader. Leader election thus terminates, and the
 	 * the actual workload for the system begins running.
 	 */
-	protected void processMessageAckLeader() throws InterruptedException {
+	protected void processMessageAckLeader() {
 		numLeaderAcksReceived++;
 		if (numLeaderAcksReceived == allProcesses.length - 1 && isLeader) {
 			/*
@@ -180,7 +180,7 @@ public class BaselineProcess extends Process {
 	 *
 	 * @param  m	the message received
 	 */
-	public void processMessageSpecial(Message m) throws InterruptedException {
+	public void processMessageSpecial(Message m) {
 		switch (m.getType()) {
 		case MSG_BASELINE_ELECT_LEADER:
 			processMessageElectLeader(m);

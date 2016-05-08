@@ -29,6 +29,9 @@ public class MSTProcess extends Process {
 	double bestWt = Double.MAX_VALUE;
 	int bestEdge = -1;
 	int inBranch = -1;
+	int numChildren = -1;
+	
+	int acksReceived = 0;
 
 	public MSTProcess(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages,
@@ -264,16 +267,9 @@ public class MSTProcess extends Process {
 			}
 			if (testEdge != m.getSender()) {
 				// TODO remove messageContent here in a way which doesn't
-				// include nulls
+				// include null ptrs
 				this.sendMessage(
-						new Message(id, m.getSender(), MessageType.MSG_MST_REJECT, new MSTMessageContent(null))); // TODO
-																													// remove
-																													// MessageContent
-																													// here
-																													// w/o
-																													// causing
-																													// null
-																													// ptr
+						new Message(id, m.getSender(), MessageType.MSG_MST_REJECT, new MSTMessageContent(null)));
 			} else {
 				this.test();
 			}
@@ -293,39 +289,56 @@ public class MSTProcess extends Process {
 		}
 	}
 
-	public void processFinish(Message m) {
+	public void processFinish(Message m) throws InterruptedException {
 		MSTMessageContent mContent = (MSTMessageContent) m.getContent();
 		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
 		System.out.println(m.getSender() + " to " + id);
 		passMessage(m.getType(), m.getContent());
+		ackLeader();
 	}
 
 	protected boolean passMessage(MessageType messageType, MessageContent m) {
 		Iterator<Integer> it = se.keySet().iterator();
 		boolean isLeaf =  true;
+		int count = 0;
 		while (it.hasNext()) {
 			int nextId = it.next();
 			if ((id == leaderId || nextId != inBranch) && se.get(nextId) == SE_BRANCH) {
 				isLeaf = false;
+				count = count + 1;
 				this.sendMessage(new Message(id, nextId, messageType, m));
 			}
 		}
+		if (numChildren < 0)
+			numChildren = count;
 		return isLeaf;
 	}
 
-	public void electLeader() throws InterruptedException {
-		// TODO
-	}
 
 	@Override
 	public void broadcast(MessageType messageType, MessageContent mContent) throws InterruptedException {
 		assert (id == this.leaderId);
 		passMessage(messageType, mContent);
 	}
+	
+	protected void processLeaderBroadcastSimple(Message m) throws InterruptedException {
+		assert(!isLeader);
+		passMessage(m.getType(), m.getContent());
+		super.processLeaderBroadcastSimpleForReceiver(m);
+	}
+	
 
 	@Override
-	public void queryLeader(MessageType messageType, MessageContent mContent) throws InterruptedException {
-		// TODO Auto-generated method stub
+	public void queryLeader(MessageContent mContent) throws InterruptedException {
+		sendMessage(new Message(id, inBranch, MessageType.MSG_QUERY_SIMPLE, mContent));
+	}
+
+	protected void processQuerySimple(Message m) throws InterruptedException {
+		if (id == leaderId) {
+			super.processQuerySimpleForLeader(m);
+		} else {
+			queryLeader(m.getContent());
+		}
 	}
 
 	public void processMessageSpecial(Message m) throws InterruptedException {
@@ -366,13 +379,19 @@ public class MSTProcess extends Process {
 
 	@Override
 	protected void ackLeader() throws InterruptedException {
-		// TODO Auto-generated method stub
-
+		acksReceived++;
+		if (acksReceived == numChildren + 1) {
+			if (id != leaderId) {
+				sendMessage(new Message(id, inBranch, MessageType.MSG_ACK_LEADER, null));
+			} else {
+				System.out.println("Leader acked!");
+				startRunningSimple();
+			}
+		}
 	}
 
 	@Override
 	protected void processMessageAckLeader() throws InterruptedException {
-		// TODO Auto-generated method stub
-
+		ackLeader();
 	}
 }

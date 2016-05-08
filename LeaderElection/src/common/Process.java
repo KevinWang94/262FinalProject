@@ -36,7 +36,7 @@ public abstract class Process implements Runnable {
 
 	public abstract void triggerLeaderElection() throws InterruptedException;
 	public abstract void broadcast(MessageType messageType, MessageContent mc) throws InterruptedException;
-	public abstract void queryLeader(MessageType messageType, MessageContent mc) throws InterruptedException;
+	public abstract void queryLeader(MessageContent mc) throws InterruptedException;
 	protected abstract void ackLeader() throws InterruptedException;
 
 	/* Message handling */
@@ -53,16 +53,23 @@ public abstract class Process implements Runnable {
 		broadcast(MessageType.MSG_LEADER_BROADCAST_SIMPLE, new MessageContent("Hello!"));
 	}
 	
-	private void processLeaderBroadcastSimple(Message m) throws InterruptedException {
+	// TODO MICHELLE where to put this too
+	protected abstract void processLeaderBroadcastSimple(Message m) throws InterruptedException;
+
+	protected void processLeaderBroadcastSimpleForReceiver(Message m) throws InterruptedException {
 		assert(!isLeader);
-		queryLeader(MessageType.MSG_QUERY_SIMPLE, new MessageContent("Why are you talking to me?"));
+		System.out.println(id + " has received!");
+		queryLeader(new MessageContent("Why are you talking to me?"));
 	}
+
+	protected abstract void processQuerySimple(Message m) throws InterruptedException;
 	
 	int numSimpleQueriesReceived = 0;
-	private void processQuerySimple(Message m) throws InterruptedException {
+	protected void processQuerySimpleForLeader(Message m) throws InterruptedException {
 		numSimpleQueriesReceived++;
 		if (numSimpleQueriesReceived == allProcesses.length - 1) {
 			costTracker.dumpCosts();
+			System.out.println("All queries received!");
 		}
 	}
 

@@ -136,7 +136,7 @@ public class ElectionRunner {
 		int[] ids = genIds(Integer.parseInt(args[0]));
 		HashMap<Integer, HashMap<Integer, Double>> costs = genCosts(ids);
 		instantiateAndRun(ids, costs, Model.MST, args[1]);
-		//instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
+		instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
 		//instantiateAndRun(ids, costs, Model.SHORTESTPATH, args[3]);	
 	}
 }

@@ -62,7 +62,7 @@ public class ElectionRunner {
 			queues.put(ids[i], new LinkedBlockingQueue<Message>());
 		}
 
-		CostTracker tracker = new CostTracker(ids);
+		CostTracker tracker = new CostTracker(ids, outfile);
 		
 		for (int i = 0; i < ids.length; i++) {
 			// System.out.println(ids[i]);
@@ -72,10 +72,10 @@ public class ElectionRunner {
 			Process curr = null;
 			switch (m) {
 			case MST:
-				curr = new MSTProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
+				curr = new MSTProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker);
 				break;
 			case BASELINE:
-				curr = new BaselineProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
+				curr = new BaselineProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker);
 			}
 			(new Thread(curr)).start();
 			processes.put(ids[i], curr);

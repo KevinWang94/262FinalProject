@@ -33,9 +33,8 @@ public class BaselineProcess extends Process {
 
 	public BaselineProcess(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages,
-			CostTracker costTracker,
-			String outfile) {
-		super(id, allProcesses, costs, queues, incomingMessages, costTracker, outfile);
+			CostTracker costTracker) {
+		super(id, allProcesses, costs, queues, incomingMessages, costTracker);
 		/* Select a random UUID */
 		this.uuid = (int) (Math.random() * UUID_MAX);
 	}
@@ -130,7 +129,7 @@ public class BaselineProcess extends Process {
 					/*
 					 * Everyone also knows I'm the leader, so I can start acting
 					 * as such. Start the workload! Note: this would be nice if we had a closure 
-					 * TODO TODO TODO LOL KEVIN PLS REMOVE 
+					 * TODO LOL KEVIN PLS REMOVE 
 					 */
 					startRunningSimple();
 				}

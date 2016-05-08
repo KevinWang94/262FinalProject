@@ -117,12 +117,7 @@ public class ElectionRunner {
 			processes.put(ids[i], curr);
 		}
 
-		try {
-			processes.get(ids[0]).triggerLeaderElection();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		processes.get(ids[0]).triggerLeaderElection();
 	}
 	
 	/**

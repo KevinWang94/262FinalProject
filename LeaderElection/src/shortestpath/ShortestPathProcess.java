@@ -32,12 +32,15 @@ public class ShortestPathProcess extends MSTProcess {
 
 	@Override
 	public void processFinish(Message m) {
+		System.out.println(m.getSender() + " to " + id);
+		
 		boolean isLeaf = passMessage(m.getType(), m.getContent());
 		if (isLeaf) {
 			state = ShortestPathState.STATE_TRANSMIT;
 		} else {
 			state = ShortestPathState.STATE_RECEIVING;
 		}
+		System.out.println(id + ": " + state);
 	}
 	
 	public void initiateAllPairs() {

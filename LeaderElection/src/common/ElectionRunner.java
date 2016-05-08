@@ -4,13 +4,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import shortestpath.ShortestPathProcess;
 import mst.MSTProcess;
 import baseline.BaselineProcess;
 
 public class ElectionRunner {
 	
 	public enum Model {
-		BASELINE, MST
+		BASELINE, MST, SHORTESTPATH
 	}
 
 	public static HashMap<Integer, HashMap<Integer, Double>> addToCosts(
@@ -76,6 +77,8 @@ public class ElectionRunner {
 				break;
 			case BASELINE:
 				curr = new BaselineProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
+			case SHORTESTPATH:
+				curr = new ShortestPathProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
 			}
 			(new Thread(curr)).start();
 			processes.put(ids[i], curr);
@@ -92,7 +95,8 @@ public class ElectionRunner {
 	public static void main(String[] args) {
 		int[] ids = genIds(Integer.parseInt(args[0]));
 		HashMap<Integer, HashMap<Integer, Double>> costs = genCosts(ids);
-		instantiateAndRun(ids, costs, Model.MST, args[1]);
+		//instantiateAndRun(ids, costs, Model.MST, args[1]);
 		//instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
+		instantiateAndRun(ids, costs, Model.SHORTESTPATH, args[1]);	
 	}
 }

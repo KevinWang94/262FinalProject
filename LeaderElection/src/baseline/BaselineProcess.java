@@ -33,8 +33,9 @@ public class BaselineProcess extends Process {
 
 	public BaselineProcess(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages,
-			CostTracker costTracker) {
-		super(id, allProcesses, costs, queues, incomingMessages, costTracker);
+			CostTracker costTracker,
+			String outfile) {
+		super(id, allProcesses, costs, queues, incomingMessages, costTracker, outfile);
 		/* Select a random UUID */
 		this.uuid = (int) (Math.random() * UUID_MAX);
 	}

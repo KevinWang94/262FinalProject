@@ -36,8 +36,9 @@ public class MSTProcess extends Process {
 			HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues,
 			LinkedBlockingQueue<Message> incomingMessages,
-			CostTracker costTracker) {
-		super(id, allProcesses, costs, queues, incomingMessages, costTracker);
+			CostTracker costTracker,
+			String outfile) {
+		super(id, allProcesses, costs, queues, incomingMessages, costTracker, outfile);
 		this.ln = 0;
 		this.sn = SN_SLEEPING;
 		this.fn = -1;

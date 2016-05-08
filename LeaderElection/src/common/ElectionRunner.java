@@ -5,8 +5,13 @@ import java.util.HashSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import mst.MSTProcess;
+import baseline.BaselineProcess;
 
-public abstract class ElectionRunner {
+public class ElectionRunner {
+	
+	public enum Model {
+		BASELINE, MST
+	}
 
 	public static HashMap<Integer, HashMap<Integer, Double>> addToCosts(
 			HashMap<Integer, HashMap<Integer, Double>> costs, int i, int j, double cost) {
@@ -20,7 +25,7 @@ public abstract class ElectionRunner {
 		return costs;
 	}
 	
-	public int[] genIds(int numProcesses) {
+	public static int[] genIds(int numProcesses) {
 		HashSet<Integer> seen = new HashSet<Integer>();
 		int[] ids = new int[numProcesses];
 		for (int i = 0; i < numProcesses; i++) {
@@ -35,7 +40,7 @@ public abstract class ElectionRunner {
 		return ids;
 	}
 	
-	public HashMap<Integer, HashMap<Integer, Double>> genCosts(int[] ids) {
+	public static HashMap<Integer, HashMap<Integer, Double>> genCosts(int[] ids) {
 		HashMap<Integer, HashMap<Integer, Double>> costs = new HashMap<Integer, HashMap<Integer, Double>>();
 
 		for (int i = 0; i < ids.length; i++) {
@@ -49,7 +54,7 @@ public abstract class ElectionRunner {
 		return costs;
 	}
 
-	public static void instantiateAndRun(int[] ids, HashMap<Integer, HashMap<Integer, Double>> costs) {
+	public static void instantiateAndRun(int[] ids, HashMap<Integer, HashMap<Integer, Double>> costs, Model m, String outfile) {
 		HashMap<Integer, LinkedBlockingQueue<Message>> queues = new HashMap<Integer, LinkedBlockingQueue<Message>>();
 		HashMap<Integer, Process> processes = new HashMap<Integer, Process>();
 
@@ -64,7 +69,14 @@ public abstract class ElectionRunner {
 		}
 
 		for (int i = 0; i < ids.length; i++) {
-			Process curr = new MSTProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker);
+			Process curr = null;
+			switch (m) {
+			case MST:
+				curr = new MSTProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
+				break;
+			case BASELINE:
+				curr = new BaselineProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
+			}
 			(new Thread(curr)).start();
 			processes.put(ids[i], curr);
 		}
@@ -75,14 +87,12 @@ public abstract class ElectionRunner {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// for (int i = 0; i < n; i++) {
-		// Process curr = processes.get(ids[i]);
-		// try {
-		// curr.broadcast(null);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
+	}
+	
+	public static void main(String[] args) {
+		int[] ids = genIds(Integer.parseInt(args[0]));
+		HashMap<Integer, HashMap<Integer, Double>> costs = genCosts(ids);
+		instantiateAndRun(ids, costs, Model.MST, args[1]);
+		instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
 	}
 }

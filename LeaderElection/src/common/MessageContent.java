@@ -1,13 +1,13 @@
 package common;
 
-public abstract class MessageContent {
+public class MessageContent {
 	private String body;
 	
-	protected MessageContent() {
+	public MessageContent() {
 		body = null;
 	}
 	
-	protected MessageContent(String body) {
+	public MessageContent(String body) {
 		this.body = body;
 	}
 	

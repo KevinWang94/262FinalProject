@@ -34,51 +34,66 @@ public abstract class Process implements Runnable {
 		this.costTracker = costTracker;
 	}
 
-	/* PUBLIC API */
 	public abstract void triggerLeaderElection() throws InterruptedException;
-
-	public abstract void broadcast(MessageContent mc) throws InterruptedException;
-
-	public abstract void queryLeader(String queryString) throws InterruptedException;
-
-	// Workload stuff
-	protected abstract void broadcastLeaderHello() throws InterruptedException;
+	public abstract void broadcast(int messageType, MessageContent mc) throws InterruptedException;
+	public abstract void queryLeader(int messageType, MessageContent mc) throws InterruptedException;
+	protected abstract void ackLeader() throws InterruptedException;
 
 	/* Message handling */
-
-	protected abstract void processMessageAckLeader(Message m) throws InterruptedException;
-
-	protected abstract void processMessageQueryLeader(Message m) throws InterruptedException;
-
-	protected abstract void processMessageFromLeader(Message m) throws InterruptedException;
-
+	protected abstract void processMessageAckLeader() throws InterruptedException;
 	protected abstract void processMessageSpecial(Message m) throws InterruptedException;
+	
+	
+	/************************************************************ 
+	 * SIMPLE WORKLOAD
+	 * leader broadcasts, and then others respond with one query 
+	 ************************************************************/
+		
+	public void startRunningSimple() throws InterruptedException {
+		assert(isLeader);
+		broadcast(Message.MSG_START_SIMPLE, new MessageContent("Hello!"));
+	}
+	
+	private void processLeaderBroadcastSimple(Message m) throws InterruptedException {
+		assert(!isLeader);
+		queryLeader(Message.MSG_LEADER_BROADCAST_SIMPLE, new MessageContent("Why are you talking to me?"));
+	}
+	
+	int numSimpleQueriesReceived = 0;
+	private void processQuerySimple(Message m) throws InterruptedException {
+		numSimpleQueriesReceived++;
+		if (numSimpleQueriesReceived == allProcesses.length) {
+			// TODO TODO KEVIN DO SOMETHING HELP END HELP HELP
+			// LOL
+		}
+	}
 
 	protected void registerCost(Stage s, Message m) {
 		this.costTracker.registerCosts(s, id, costs.get(id).get(m.getSender()));
 	}
 	
 	protected void processMessage(Message m) throws InterruptedException {
-
 		switch (m.getType()) {
 		case Message.MSG_ACK_LEADER:
 			registerCost(Stage.ELECTION, m);
-			processMessageAckLeader(m);
+			processMessageAckLeader();
 			break;
-		case Message.MSG_QUERY_LEADER:
-			registerCost(Stage.QUERY, m);
-			processMessageQueryLeader(m);
+		case Message.MSG_LEADER_BROADCAST_SIMPLE:
+			processLeaderBroadcastSimple(m);
 			break;
-		case Message.MSG_LEADER_RESPONSE:
-			registerCost(Stage.RESPONSE, m);
-			processMessageFromLeader(m);
+		case Message.MSG_QUERY_SIMPLE:
+			processQuerySimple(m);
 			break;
 		default:
 			processMessageSpecial(m);
 			break;
 		}
 	}
-
+	
+	
+	/* 
+	 * This is not what you think it is. lol. it is a helper very private very secret DO NOT INVOKE
+	 */
 	public void sendMessage(Message m) throws InterruptedException {
 		BlockingQueue<Message> queue = queues.get(m.getReciever());
 		queue.put(m);

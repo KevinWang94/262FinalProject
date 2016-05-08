@@ -30,9 +30,6 @@ public class BaselineProcess extends Process {
 	 */
 	private int numLeaderAcksReceived = 0;
 
-	// TODO: change this to a queue to handle leader elections being triggered
-	// by queries.
-	BaselineMessageContent pendingQueryMC = null;
 
 	public BaselineProcess(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages,
@@ -45,34 +42,24 @@ public class BaselineProcess extends Process {
 	/* =========== Public API =========== */
 
 	@Override
-	public void broadcast(MessageContent mc) throws InterruptedException {
+	public void broadcast(int messageType, MessageContent mc) throws InterruptedException {
 		assert (mc instanceof BaselineMessageContent);
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
-				sendMessage(new Message(id, allProcesses[i], mc));
+				sendMessage(new Message(id, allProcesses[i], messageType, mc));
 			}
 		}
 	}
 
 	@Override
-	public void queryLeader(String queryString) throws InterruptedException {
-		BaselineMessageContent queryMC = BaselineMessageContent.createBMCQueryLeader(queryString);
-
-		if (this.leaderId == BaselineProcess.ID_NONE) {
-			/*
-			 * No leader chosen yet. Queue up the query to be sent later, and
-			 * trigger the election. When the election completes, the query will
-			 * be sent out. Note: this message gets dropped if it turns out this
-			 * process is the leader.
-			 */
-
-			/*
-			 * TODO TODO THIS IS BROKEN pendingQueryMC = queryMC;
-			 * triggerLeaderElection();
-			 */
-			return;
-		}
-		sendMessage(new Message(id, leaderId, queryMC));
+	public void queryLeader(int messageType, MessageContent mc) throws InterruptedException {
+		/*
+		 * No leader chosen yet, or is leader. This should not be possible in our implementation.
+		 */
+		assert(this.leaderId != BaselineProcess.ID_NONE);
+		assert(!isLeader);
+			
+		sendMessage(new Message(id, leaderId, messageType, mc));
 	}
 
 	@Override
@@ -80,24 +67,8 @@ public class BaselineProcess extends Process {
 		broadcastUuidForElection();
 	}
 
-	/* ========= Workload specific =========== */
-
-	// Responding to a query
-	private void leaderResponse(Message m) {
-		// TODO
-	}
-
-	private void workerQuery() {
-		// TODO
-	}
 
 	/* ======== Message sending helpers ========= */
-
-	@Override
-	protected void broadcastLeaderHello() throws InterruptedException {
-		assert (isLeader);
-		broadcast(BaselineMessageContent.createBMCLeaderHello());
-	}
 
 	private void broadcastUuidForElection() throws InterruptedException {
 		/* You should only broadcast once */
@@ -107,43 +78,29 @@ public class BaselineProcess extends Process {
 		/* Broadcast UUID to all */
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
-				sendMessage(new Message(id, allProcesses[i], BaselineMessageContent.createBMCElectLeader(uuid)));
+				sendMessage(new Message(id, allProcesses[i], Message.MSG_ELECT_LEADER, BaselineMessageContent.createBMCElectLeader(uuid)));
 			}
 		}
 	}
 
-	private void ackLeader() throws InterruptedException {
-		assert (this.leaderId != BaselineProcess.ID_NONE);
-		sendMessage(new Message(id, leaderId, BaselineMessageContent.createBMCAckLeader()));
+	@Override
+	protected void ackLeader() throws InterruptedException {
+		assert(this.leaderId != BaselineProcess.ID_NONE);
+		sendMessage(new Message(id, leaderId, Message.MSG_ACK_LEADER, null));
 	}
 
 	/* ======== Message receipt handlers ========= */
 
-	private void processMessageAckLeader() throws InterruptedException {
+	@Override
+	protected void processMessageAckLeader() throws InterruptedException {
 		numLeaderAcksReceived++;
 		if (numLeaderAcksReceived == allProcesses.length - 1 && isLeader) {
 			/*
 			 * If everyone knows I'm the leader, including myself, then I can
 			 * act as leader
 			 */
-			leaderRoutine();
+			startRunningSimple();
 		}
-	}
-
-	protected void processMessageQueryLeader(Message m) {
-		BaselineMessageContent bmc = (BaselineMessageContent) m.getContent();
-		assert (bmc.getType() == BaselineMessageContent.MSG_QUERY_LEADER);
-		assert (isLeader);
-
-		leaderResponse(m);
-	}
-
-	protected void processMessageFromLeader(Message m) {
-		BaselineMessageContent bmc = (BaselineMessageContent) m.getContent();
-		assert (bmc.getType() == BaselineMessageContent.MSG_LEADER_RESPONSE);
-		assert (!isLeader);
-
-		// TODO
 	}
 
 	private void processMessageElectLeader(Message m) throws InterruptedException {
@@ -171,32 +128,14 @@ public class BaselineProcess extends Process {
 				if (numLeaderAcksReceived == allProcesses.length - 1) {
 					/*
 					 * Everyone also knows I'm the leader, so I can start acting
-					 * as such
+					 * as such. Start the workload! Note: this would be nice if we had a closure 
+					 * TODO TODO TODO LOL KEVIN PLS REMOVE 
 					 */
-
-					/*
-					 * First handle whatever query to the leader that might have
-					 * arrived before election finished
-					 */
-					if (pendingQueryMC != null) {
-						sendMessage(new Message(id, leaderId, pendingQueryMC));
-						pendingQueryMC = null;
-					}
-
-					leaderRoutine();
+					startRunningSimple();
 				}
 			} else {
 				assert (numLeaderAcksReceived == 0);
 				ackLeader();
-
-				/*
-				 * If a query was queued up to be sent before leader election,
-				 * do it now
-				 */
-				if (pendingQueryMC != null) {
-					sendMessage(new Message(id, leaderId, pendingQueryMC));
-					pendingQueryMC = null;
-				}
 			}
 		}
 	}
@@ -211,29 +150,5 @@ public class BaselineProcess extends Process {
 			// TODO error
 			break;
 		}
-	}
-
-	@Override
-	protected void broadcastHello() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void processMessageAckLeader(Message m) throws InterruptedException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void processMessageQueryLeader(Message m) throws InterruptedException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void processMessageFromLeader(Message m) throws InterruptedException {
-		// TODO Auto-generated method stub
-
 	}
 }

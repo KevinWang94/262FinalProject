@@ -320,10 +320,25 @@ public class MSTProcess extends Process {
 		assert (id == this.leaderId);
 		passMessage(messageType, mContent);
 	}
+	
+	protected void processLeaderBroadcastSimple(Message m) throws InterruptedException {
+		assert(!isLeader);
+		passMessage(m.getType(), m.getContent());
+		super.processLeaderBroadcastSimpleForReceiver(m);
+	}
+	
 
 	@Override
-	public void queryLeader(MessageType messageType, MessageContent mContent) throws InterruptedException {
-		// TODO Auto-generated method stub
+	public void queryLeader(MessageContent mContent) throws InterruptedException {
+		sendMessage(new Message(id, inBranch, MessageType.MSG_QUERY_SIMPLE, mContent));
+	}
+
+	protected void processQuerySimple(Message m) throws InterruptedException {
+		if (id == leaderId) {
+			super.processQuerySimpleForLeader(m);
+		} else {
+			queryLeader(m.getContent());
+		}
 	}
 
 	public void processMessageSpecial(Message m) throws InterruptedException {
@@ -371,6 +386,7 @@ public class MSTProcess extends Process {
 				sendMessage(new Message(id, inBranch, MessageType.MSG_ACK_LEADER, null));
 			} else {
 				System.out.println("Leader acked!");
+				startRunningSimple();
 			}
 		}
 	}

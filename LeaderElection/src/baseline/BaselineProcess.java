@@ -53,14 +53,14 @@ public class BaselineProcess extends Process {
 	}
 
 	@Override
-	public void queryLeader(MessageType messageType, MessageContent mc) throws InterruptedException {
+	public void queryLeader(MessageContent mc) throws InterruptedException {
 		/*
 		 * No leader chosen yet, or is leader. This should not be possible in our implementation.
 		 */
 		assert(this.leaderId != BaselineProcess.ID_NONE);
 		assert(!isLeader);
 			
-		sendMessage(new Message(id, leaderId, messageType, mc));
+		sendMessage(new Message(id, leaderId, MessageType.MSG_QUERY_SIMPLE, mc));
 	}
 
 	@Override
@@ -91,6 +91,16 @@ public class BaselineProcess extends Process {
 	}
 
 	/* ======== Message receipt handlers ========= */
+
+	// TODO MICHELLE where to put this
+	protected void processLeaderBroadcastSimple(Message m) throws InterruptedException {
+		processLeaderBroadcastSimpleForReceiver(m);
+	}
+	
+	protected void processQuerySimple(Message m) throws InterruptedException {
+		super.processQuerySimpleForLeader(m);
+	}
+
 
 	@Override
 	protected void processMessageAckLeader() throws InterruptedException {

@@ -24,7 +24,6 @@ public class Message {
 		/* path */
 		MSG_PATH_PARTIAL,
 		MSG_PATH_FINAL,
-		
 	}
 	
 	private int sender;

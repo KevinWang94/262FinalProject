@@ -10,7 +10,8 @@ import common.Process;
 public class TestProcess extends Process {
 	
 	public TestProcess(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs, HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages) {
-		super(id, allProcesses, costs, queues, incomingMessages);
+		// TODO: decide if we need TestPRocess
+		// super(id, allProcesses, costs, queues, incomingMessages);
 		assert(allProcesses != null);
 	}
 
@@ -39,7 +40,31 @@ public class TestProcess extends Process {
 	}
 
 	@Override
-	protected void leaderRoutine() {
+	protected void broadcastLeaderHello() throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageAckLeader(Message m) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageQueryLeader(Message m) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageFromLeader(Message m) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageSpecial(Message m) throws InterruptedException {
 		// TODO Auto-generated method stub
 		
 	}

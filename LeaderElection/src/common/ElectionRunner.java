@@ -1,8 +1,5 @@
 package common;
 
-/**
- * This is our main class, running desire simulations and dumping results out to files
- */
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -11,8 +8,12 @@ import shortestpath.ShortestPathProcess;
 import mst.MSTProcess;
 import baseline.BaselineProcess;
 
+/**
+ * This is our main class, running desire simulations and dumping results out to
+ * files
+ */
 public class ElectionRunner {
-	
+
 	/**
 	 * What model we're running
 	 */
@@ -22,11 +23,16 @@ public class ElectionRunner {
 
 	/**
 	 * Helper function for updating costs
-	 * @param costs	costs map
-	 * @param i		from node
-	 * @param j		to node
-	 * @param cost	cost it should be
-	 * @return	updated cost map
+	 * 
+	 * @param costs
+	 *            costs map
+	 * @param i
+	 *            from node
+	 * @param j
+	 *            to node
+	 * @param cost
+	 *            cost it should be
+	 * @return updated cost map
 	 */
 	private static HashMap<Integer, HashMap<Integer, Double>> addToCosts(
 			HashMap<Integer, HashMap<Integer, Double>> costs, int i, int j, double cost) {
@@ -39,13 +45,15 @@ public class ElectionRunner {
 		}
 		return costs;
 	}
-	
+
 	/**
 	 * Generate an array of ids
-	 * @param numProcesses	the number of ids we must generated
-	 * @return	the generated ids
+	 * 
+	 * @param numProcesses
+	 *            the number of ids we must generated
+	 * @return the generated ids
 	 */
-	public static int[] genIds(int numProcesses) {
+	private static int[] genIds(int numProcesses) {
 		HashSet<Integer> seen = new HashSet<Integer>();
 		int[] ids = new int[numProcesses];
 		for (int i = 0; i < numProcesses; i++) {
@@ -59,13 +67,16 @@ public class ElectionRunner {
 		}
 		return ids;
 	}
-	
+
 	/**
 	 * Randomly generate edge costs
-	 * @param ids	the ids of the processes
-	 * @return		the costs that have been generated, a mapping from in node to out node to cost
+	 * 
+	 * @param ids
+	 *            the ids of the processes
+	 * @return the costs that have been generated, a mapping from in node to out
+	 *         node to cost
 	 */
-	public static HashMap<Integer, HashMap<Integer, Double>> genCosts(int[] ids) {
+	private static HashMap<Integer, HashMap<Integer, Double>> genCosts(int[] ids) {
 		HashMap<Integer, HashMap<Integer, Double>> costs = new HashMap<Integer, HashMap<Integer, Double>>();
 
 		for (int i = 0; i < ids.length; i++) {
@@ -75,18 +86,24 @@ public class ElectionRunner {
 				costs = addToCosts(costs, ids[j], ids[i], cost);
 			}
 		}
-		
+
 		return costs;
 	}
 
 	/**
 	 * Instantiate and run a simulation
-	 * @param ids		the ids generated above
-	 * @param costs		the randomly generated costs
-	 * @param m			the model
-	 * @param outfile	the outfile we should write results to
+	 * 
+	 * @param ids
+	 *            the ids generated above
+	 * @param costs
+	 *            the randomly generated costs
+	 * @param m
+	 *            the model
+	 * @param outfile
+	 *            the outfile we should write results to
 	 */
-	public static void instantiateAndRun(int[] ids, HashMap<Integer, HashMap<Integer, Double>> costs, Model m, String outfile) {
+	private static void instantiateAndRun(int[] ids, HashMap<Integer, HashMap<Integer, Double>> costs, Model m,
+			String outfile) {
 		HashMap<Integer, LinkedBlockingQueue<Message>> queues = new HashMap<Integer, LinkedBlockingQueue<Message>>();
 		HashMap<Integer, Process> processes = new HashMap<Integer, Process>();
 
@@ -95,7 +112,7 @@ public class ElectionRunner {
 		}
 
 		CostTracker tracker = new CostTracker(ids, outfile);
-		
+
 		for (int i = 0; i < ids.length; i++) {
 			// System.out.println(ids[i]);
 		}
@@ -119,13 +136,13 @@ public class ElectionRunner {
 
 		processes.get(ids[0]).triggerLeaderElection();
 	}
-	
+
 	/**
 	 * Main driver method
 	 * 
 	 * @param args
-	 * 		args[0] is the number of processes desired
-	 * 		args[1], [2], and [3] are the outfiles for MST, Baseline, and ShortestPath
+	 *            args[0] is the number of processes desired args[1], [2], and
+	 *            [3] are the outfiles for MST, Baseline, and ShortestPath
 	 */
 	public static void main(String[] args) {
 		int[] ids = genIds(Integer.parseInt(args[0]));

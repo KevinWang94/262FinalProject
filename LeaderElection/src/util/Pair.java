@@ -16,4 +16,16 @@ public class Pair {
 	public int snd() {
 		return snd;
 	}
+	
+	public int hashCode() {
+		return (fst * 31) ^ snd;
+	}
+	
+	public boolean equals(Object o) {
+		if (o instanceof Pair) {
+			Pair other = (Pair) o;
+			return ((fst == other.fst()) && (snd == other.snd()));
+		}
+		return false;
+	}
 }

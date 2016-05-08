@@ -10,9 +10,11 @@ import util.PathInfo;
 import common.CostTracker;
 import common.Message;
 import common.Message.MessageType;
+import common.MessageContent;
+import mst.MSTBase;
 import mst.MSTProcess;
 
-public class ShortestPathProcess extends MSTProcess {
+public class ShortestPathProcess extends MSTBase {
 
 	public enum ShortestPathState {
 		STATE_TRANSMIT,
@@ -21,10 +23,16 @@ public class ShortestPathProcess extends MSTProcess {
 		STATE_UNASSIGNED
 	}
 	
+	public enum LeaderMethod {
+		METHOD_MAX,
+		METHOD_SUM
+	}
+	
 	private ShortestPathState state;
 	HashMap<Pair, PathInfo> pd;
 	int count;
 	HashSet<Integer> seen;
+	private LeaderMethod method;
 	
 	public ShortestPathProcess(int id, int[] allProcesses,
 			HashMap<Integer, HashMap<Integer, Double>> costs,
@@ -36,6 +44,7 @@ public class ShortestPathProcess extends MSTProcess {
 		pd = new HashMap<Pair, PathInfo>();
 		count = 0;
 		seen = new HashSet<Integer>();
+		method = LeaderMethod.METHOD_SUM;
 	}
 
 	@Override
@@ -94,7 +103,7 @@ public class ShortestPathProcess extends MSTProcess {
 				break;
 			}
 		}
-
+		System.out.println("Transmitting partial distance matrix.");
 		this.sendMessage(new Message(id, sendId, 
 				MessageType.MSG_PATH_PARTIAL,
 				new ShortestPathMessageContent(pd)));
@@ -102,6 +111,7 @@ public class ShortestPathProcess extends MSTProcess {
 	
 	public void augmentPd(HashMap<Pair, PathInfo> newPd) {
 		for (Pair pair : newPd.keySet()) {
+			System.out.println(newPd.get(pair).getCost() + " " + pd.get(pair).getCost());
 			if (newPd.get(pair).getCost() < pd.get(pair).getCost()) {
 				pd.put(pair, newPd.get(pair));
 			}
@@ -124,6 +134,38 @@ public class ShortestPathProcess extends MSTProcess {
 		}
 	}
 	
+	public void chooseLeader() {
+		double bestVal = Double.MAX_VALUE; 
+		int bestId = -1;
+		for (Integer i : allProcesses) {
+			double val = (method == LeaderMethod.METHOD_MAX) ? -1 : 0; 
+			for (Pair pair : pd.keySet()) {
+				if (pair.fst() == i) {
+					double newCost = pd.get(pair).getCost();
+					if (method == LeaderMethod.METHOD_MAX) {
+						if (newCost > val) {
+							val = newCost;
+						}
+					} else {
+						val += newCost;
+					}
+				}
+			}
+			if (val < bestVal) {
+				bestVal = val;
+				bestId = i;
+			}
+ 		}
+
+		leaderId = bestId;
+		isLeader = (leaderId == id);
+		printDebugInfo();
+	}
+	
+	public void printDebugInfo() {
+		System.out.println("Leader: " + leaderId);
+	}
+	
 	public void sendFinalPaths(int noSendId) {
 		for (Integer i : se.keySet()) {
 			if ((se.get(i) == MSTProcess.SE_BRANCH) && (id != noSendId)) {
@@ -131,6 +173,7 @@ public class ShortestPathProcess extends MSTProcess {
 						new ShortestPathMessageContent(pd)));				
 			}
 		}
+		chooseLeader();
 	}
 	
 	public void processPathPartial(Message m) {
@@ -138,11 +181,11 @@ public class ShortestPathProcess extends MSTProcess {
 		augmentPd(mContent.getPaths());
 		count++;
 		seen.add(m.getSender());
-		if (count == numChildren) {
+		if (count == numBranch - 1) {
 			state = ShortestPathState.STATE_TRANSMIT;
 			transmittingNodeProcess();
 		}
-		if (count == (numChildren + 1)) {
+		if (count == numBranch) {
 			state = ShortestPathState.STATE_SATURATED;
 			sendFinalPaths(-1);
 		}
@@ -155,18 +198,62 @@ public class ShortestPathProcess extends MSTProcess {
 		sendFinalPaths(m.getSender());
 	}
 	
-	public void processMessageSpecial(Message m) {
+	public boolean processMessageSpecial(Message m) {
+		boolean done = super.processMessageSpecial(m);
+		if (done) 
+			return true;
 		switch (m.getType()) {
 			case MSG_PATH_PARTIAL:
 				processPathPartial(m);
-				break;
+				System.out.println("Processing path partial from " + m.getSender() + " to " + m.getReceiver());
+				return true;
 			case MSG_PATH_FINAL:
 				processPathFinal(m);
-				break;
+				System.out.println("Processing path final from " + m.getSender() + " to " + m.getReceiver());
+				return true;
 			default:
-				// TODO FAIL
+				return false;
 		}
 	}
 
+	@Override
+	public void triggerLeaderElection() {
+		wakeup();
+	}
 
+	@Override
+	public void broadcast(MessageType messageType, MessageContent mc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void queryLeader(MessageContent mc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void ackLeader() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processMessageAckLeader() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processLeaderBroadcastSimple(Message m) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void processQuerySimple(Message m) {
+		// TODO Auto-generated method stub
+		
+	}
 }

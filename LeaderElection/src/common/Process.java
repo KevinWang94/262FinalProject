@@ -40,7 +40,7 @@ public abstract class Process implements Runnable {
 	protected abstract void ackLeader();
 
 	/* Message handling */
-	protected abstract void processMessageSpecial(Message m);
+	protected abstract boolean processMessageSpecial(Message m);
 	protected abstract void processMessageAckLeader();
 	
 	/************************************************************ 
@@ -97,7 +97,7 @@ public abstract class Process implements Runnable {
 			s = Stage.QUERY;
 			break;
 		}
-		if(id != m.getReceiver()) {
+		if (id != m.getReceiver()) {
 			this.costTracker.registerCosts(s, id, costs.get(id).get(m.getReceiver()));
 		}
 	}
@@ -152,13 +152,11 @@ public abstract class Process implements Runnable {
 			try {
 				checkForMessages();
 			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

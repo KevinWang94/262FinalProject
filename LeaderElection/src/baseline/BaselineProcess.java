@@ -34,13 +34,14 @@ public class BaselineProcess extends Process {
 		/* Select a random UUID */
 		this.uuid = (int) (Math.random() * UUID_MAX);
 		this.leaderUuid = uuid;
+		this.leaderId = id;
 	}
 
 	/* =========== Public API =========== */
 
 	@Override
 	public void broadcast(MessageType messageType, MessageContent mc) {
-		assert (mc instanceof BaselineMessageContent);
+//		assert (mc instanceof BaselineMessageContent);
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
 				sendMessage(new Message(id, allProcesses[i], messageType, mc));
@@ -179,15 +180,15 @@ public class BaselineProcess extends Process {
 	 * Redirects to specific handler for the MessageType.
 	 *
 	 * @param  m	the message received
+	 * @return  true if message was processed; false if case not handled
 	 */
-	public void processMessageSpecial(Message m) {
+	public boolean processMessageSpecial(Message m) {
 		switch (m.getType()) {
 		case MSG_BASELINE_ELECT_LEADER:
 			processMessageElectLeader(m);
-			break;
+			return true;
 		default:
-			// TODO error
-			break;
+			return false;
 		}
 	}
 }

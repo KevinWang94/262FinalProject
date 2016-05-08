@@ -21,7 +21,8 @@ public class MSTProcess extends MSTBase {
 	public void processFinish(Message m) {
 		MSTMessageContent mContent = (MSTMessageContent) m.getContent();
 		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
-		System.out.println(m.getSender() + " to " + id);
+		if (DEBUG)
+			System.out.println(m.getSender() + " to " + id);
 		passMessageMST(m.getType(), m.getContent());
 		ackLeader();
 	}

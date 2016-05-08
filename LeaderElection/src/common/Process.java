@@ -8,6 +8,8 @@ import common.CostTracker.Stage;
 import common.Message.MessageType;
 
 public abstract class Process implements Runnable {
+	protected boolean DEBUG = false;
+	
 	protected static final int ID_NONE = -1;
 
 	protected HashMap<Integer, LinkedBlockingQueue<Message>> queues;

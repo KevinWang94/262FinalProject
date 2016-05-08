@@ -114,10 +114,6 @@ public class ElectionRunner {
 		CostTracker tracker = new CostTracker(ids, outfile);
 
 		for (int i = 0; i < ids.length; i++) {
-			// System.out.println(ids[i]);
-		}
-
-		for (int i = 0; i < ids.length; i++) {
 			Process curr = null;
 			switch (m) {
 			case MST:
@@ -149,6 +145,7 @@ public class ElectionRunner {
 		HashMap<Integer, HashMap<Integer, Double>> costs = genCosts(ids);
 		//instantiateAndRun(ids, costs, Model.MST, args[1]);
 		//instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
-		instantiateAndRun(ids, costs, Model.SHORTESTPATH, args[3]);	
+		instantiateAndRun(ids, costs, Model.SHORTESTPATH, args[3]);
+		return;
 	}
 }

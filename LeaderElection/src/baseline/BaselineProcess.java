@@ -34,13 +34,14 @@ public class BaselineProcess extends Process {
 		/* Select a random UUID */
 		this.uuid = (int) (Math.random() * UUID_MAX);
 		this.leaderUuid = uuid;
+		this.leaderId = id;
 	}
 
 	/* =========== Public API =========== */
 
 	@Override
 	public void broadcast(MessageType messageType, MessageContent mc) {
-		assert (mc instanceof BaselineMessageContent);
+//		assert (mc instanceof BaselineMessageContent);
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
 				sendMessage(new Message(id, allProcesses[i], messageType, mc));

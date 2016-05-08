@@ -97,7 +97,7 @@ public abstract class Process implements Runnable {
 			s = Stage.QUERY;
 			break;
 		}
-		if(id != m.getReceiver()) {
+		if (id != m.getReceiver()) {
 			this.costTracker.registerCosts(s, id, costs.get(id).get(m.getReceiver()));
 		}
 	}

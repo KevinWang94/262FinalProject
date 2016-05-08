@@ -7,5 +7,15 @@ import util.Pair;
 import common.MessageContent;
 
 public class ShortestPathMessageContent extends MessageContent {
-	HashMap<Pair, ArrayList<Integer>> paths;
+	private HashMap<Pair, ArrayList<Integer>> paths;
+
+	public ShortestPathMessageContent(
+			HashMap<Pair, ArrayList<Integer>> paths) {
+		super();
+		this.paths = paths;
+	}
+	
+	public HashMap<Pair, ArrayList<Integer>> getPaths() {
+		return paths;
+	}
 }

@@ -2,16 +2,11 @@ package shortestpath;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import util.Pair;
 import common.CostTracker;
 import common.Message;
-import common.MessageContent;
-import common.Message.MessageType;
-import mst.MSTMessageContent;
-
 import mst.MSTProcess;
 
 public class ShortestPathProcess extends MSTProcess {

@@ -77,8 +77,10 @@ public class ElectionRunner {
 				break;
 			case BASELINE:
 				curr = new BaselineProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
+				break;
 			case SHORTESTPATH:
 				curr = new ShortestPathProcess(ids[i], ids, costs, queues, queues.get(ids[i]), tracker, outfile);
+				break;
 			}
 			(new Thread(curr)).start();
 			processes.put(ids[i], curr);
@@ -95,8 +97,8 @@ public class ElectionRunner {
 	public static void main(String[] args) {
 		int[] ids = genIds(Integer.parseInt(args[0]));
 		HashMap<Integer, HashMap<Integer, Double>> costs = genCosts(ids);
-		//instantiateAndRun(ids, costs, Model.MST, args[1]);
-		//instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
-		instantiateAndRun(ids, costs, Model.SHORTESTPATH, args[1]);	
+		instantiateAndRun(ids, costs, Model.MST, args[1]);
+		instantiateAndRun(ids, costs, Model.BASELINE, args[2]);
+		instantiateAndRun(ids, costs, Model.SHORTESTPATH, args[3]);	
 	}
 }

@@ -6,9 +6,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import common.CostTracker;
 import common.Message;
+<<<<<<< HEAD
 import common.MessageContent;
 import common.Message.MessageType;
 import mst.MSTMessageContent;
+=======
+>>>>>>> b32f0cd9ecab526ac50925c98bdf745d42dd7997
 import mst.MSTProcess;
 
 public class ShortestPathProcess extends MSTProcess {
@@ -26,8 +29,8 @@ public class ShortestPathProcess extends MSTProcess {
 			HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues,
 			LinkedBlockingQueue<Message> incomingMessages,
-			CostTracker costTracker, String outfile) {
-		super(id, allProcesses, costs, queues, incomingMessages, costTracker, outfile);
+			CostTracker costTracker) {
+		super(id, allProcesses, costs, queues, incomingMessages, costTracker);
 	}
 
 	@Override

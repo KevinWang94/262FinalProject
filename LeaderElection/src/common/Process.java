@@ -17,15 +17,13 @@ public abstract class Process implements Runnable {
 	protected int id;
 	protected int leaderId;
 	protected CostTracker costTracker;
-	protected String outfile;
 	
 	/* true iff this process has computed itself as leader */
 	protected boolean isLeader;
 
 	public Process(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages,
-			CostTracker costTracker,
-			String outfile) {
+			CostTracker costTracker) {
 		this.queues = queues;
 		this.incomingMessages = incomingMessages;
 		this.id = id;
@@ -34,7 +32,6 @@ public abstract class Process implements Runnable {
 		this.leaderId = Process.ID_NONE;
 		this.isLeader = false;
 		this.costTracker = costTracker;
-		this.outfile = outfile;
 	}
 
 	public abstract void triggerLeaderElection() throws InterruptedException;
@@ -65,14 +62,17 @@ public abstract class Process implements Runnable {
 	int numSimpleQueriesReceived = 0;
 	private void processQuerySimple(Message m) throws InterruptedException {
 		numSimpleQueriesReceived++;
-		if (numSimpleQueriesReceived == allProcesses.length) {
-			// TODO TODO KEVIN DO SOMETHING HELP END HELP HELP
-			// LOL
+		if (numSimpleQueriesReceived == allProcesses.length - 1) {
+			costTracker.dumpCosts();
 		}
 	}
 
 	protected void registerCost(Stage s, Message m) {
 		this.costTracker.registerCosts(s, id, costs.get(id).get(m.getSender()));
+	}
+	
+	protected void dumpCosts() {
+		
 	}
 	
 	protected void processMessage(Message m) throws InterruptedException {
@@ -97,9 +97,13 @@ public abstract class Process implements Runnable {
 	/* 
 	 * This is not what you think it is. lol. it is a helper very private very secret DO NOT INVOKE
 	 */
-	public void sendMessage(Message m) throws InterruptedException {
-		BlockingQueue<Message> queue = queues.get(m.getReciever());
-		queue.put(m);
+	public void sendMessage(Message m) {
+		try {
+			BlockingQueue<Message> queue = queues.get(m.getReciever());
+			queue.put(m);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void checkForMessages() throws InterruptedException {

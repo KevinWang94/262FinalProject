@@ -13,6 +13,7 @@ public class CostTracker {
 	ConcurrentHashMap<Stage, ConcurrentHashMap<Integer, Double>> costs;
 	
 	public CostTracker(int[] ids) {
+		this.costs = new ConcurrentHashMap<Stage, ConcurrentHashMap<Integer, Double>>();
 		for(Stage s : Stage.values()) {
 			ConcurrentHashMap<Integer, Double> stageCosts = new ConcurrentHashMap<Integer, Double>();
 			for(Integer id : ids) {

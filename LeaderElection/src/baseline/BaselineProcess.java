@@ -142,7 +142,7 @@ public class BaselineProcess extends Process {
 					 * Everyone also knows I'm the leader, so I can start acting
 					 * as such. Start the workload!
 					 */
-					startRunningSimple();
+					startWorkloadSimple();
 				}
 			} else {
 				assert (numLeaderAcksReceived == 0);
@@ -171,7 +171,7 @@ public class BaselineProcess extends Process {
 			 * If everyone knows I'm the leader, including myself, then I can
 			 * act as leader. 
 			 */
-			startRunningSimple();
+			startWorkloadSimple();
 		}
 	}
 

@@ -3,9 +3,6 @@ package common;
 /**
  * This class represents messages sent between machines. Each message contains a
  * sender, receiver, type, and content.
- * 
- * @author kwang01
- *
  */
 public class Message {
 

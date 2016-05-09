@@ -9,8 +9,7 @@ import mst.MSTProcess;
 import baseline.BaselineProcess;
 
 /**
- * This is our main class, running desire simulations and dumping results out to
- * files
+ * The main class. Runs simulations and dumps results to files specified via command line arguments.
  */
 public class ElectionRunner {
 

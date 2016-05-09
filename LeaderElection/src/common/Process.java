@@ -1,5 +1,5 @@
 package common;
-// TODO do we really need comments for these sriously adlfj.sfdslfjsafkfs.agklaf;
+// TODO do we really need comments for these srsly adlfj.sfdslfjsafkfs.agklaf;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -17,7 +17,8 @@ import common.Message.MessageType;
  * in a FIFO manner, until its workload is complete. 
  * 
  * The communication-related algorithms for electing a leader, broadcasting,
- * and querying the leader must be implemented by subclasses of {@code Process}.
+ * and querying the leader must be implemented by subclasses that override this.
+ * For example, see {@link BaselineProcess} or {@link MSTProcess}.
  */
 public abstract class Process implements Runnable {	
 	// INSTANCE FIELDS ////////////////////////////////////////////////////////////
@@ -78,7 +79,7 @@ public abstract class Process implements Runnable {
 	int numSimpleQueriesReceived;
 
 	/**
-	 * Whether to output debugging messages. TODO lc is this true
+	 * Whether to output debugging messages.
 	 */
 	protected boolean DEBUG = false;
 

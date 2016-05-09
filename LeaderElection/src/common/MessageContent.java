@@ -4,11 +4,8 @@ import baseline.BaselineProcess;
 
 /**
  * This represents the content of a message. It is overridden by each separate
- * simulation to include custom contents. For example, @see
- * {@link BaselineProcess}
- * 
- * @author kwang01
- *
+ * simulation to include custom contents required by the communication algorithm.
+ * For example, @see {@link BaselineProcess}
  */
 public class MessageContent {
 	/**

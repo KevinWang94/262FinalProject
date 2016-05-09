@@ -105,6 +105,8 @@ public abstract class Process implements Runnable {
 		case MSG_QUERY_SIMPLE:
 			s = Stage.QUERY;
 			break;
+		case MSG_KILL:
+			break;
 		}
 		if (m.getType() != MessageType.MSG_KILL && id != m.getReceiver()) {
 			this.costTracker.registerCosts(s, id, costs.get(id).get(m.getReceiver()));

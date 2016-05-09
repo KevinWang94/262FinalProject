@@ -14,7 +14,7 @@ import common.Process;
  * interprocess communication. 
  * 
  * Specifically, each process randomly chooses a universally unique identifier (UUID) during
- * initialization. During leader election, all processes broadcasting their UUIDs, and everyone
+ * initialization. During leader election, all processes broadcast their UUIDs, and everyone
  * agrees that the maximal UUID is the leader of the network. To broadcast, a process directly
  * sends a message to each other process. To query the leader, a (non-leader) process just 
  * directly sends a message to the leader.

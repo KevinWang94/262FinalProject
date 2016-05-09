@@ -263,7 +263,7 @@ public class ShortestPathProcess extends MSTBase {
 			acksReceived++;
 			if (acksReceived == numBranch) {
 				System.out.println("Leader acked!");
-				startRunningSimple();			
+				startWorkloadSimple();			
 			}
 		}
 	}

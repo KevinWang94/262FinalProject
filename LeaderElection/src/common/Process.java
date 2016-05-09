@@ -1,5 +1,5 @@
 package common;
-
+// TODO do we really need comments for these srsly adlfj.sfdslfjsafkfs.agklaf;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -8,16 +8,20 @@ import common.CostTracker.Stage;
 import common.Message.MessageType;
 
 /**
- * This is an abstract class simulating a process in a distributed system. 
+ * This is an abstract class simulating a process in our simulated distributed system. 
  * The processes are programmed to do the following simple test workload:
  *   1. They elect a leader.
  *   2. The leader broadcasts to the others.
  *   3. The others respond to the leader with a basic query.
- *   
+ * After being initialized, each process simply handles one incoming message per second
+ * in a FIFO manner, until its workload is complete. 
+ * 
  * The communication-related algorithms for electing a leader, broadcasting,
- * and querying the leader must be implemented by subclasses of Process.
+ * and querying the leader must be implemented by subclasses that override this.
+ * For example, see {@link BaselineProcess} or {@link MSTProcess}.
  */
 public abstract class Process implements Runnable {	
+
 	// INSTANCE FIELDS ////////////////////////////////////////////////////////////
 	/** 
 	 * Uninitialized default ID, used to signal that no leader has been elected
@@ -59,7 +63,8 @@ public abstract class Process implements Runnable {
 	 */
 	protected HashMap<Integer, HashMap<Integer, Double>> costs;
 	/**
-	 * TODO KEVIN ADD COMMENT
+	 * The {@code CostTracker} object shared by all the threads, used for registering 
+	 * costs incurred upon sending messages.
 	 */
 	protected CostTracker costTracker;
 	
@@ -75,14 +80,14 @@ public abstract class Process implements Runnable {
 	int numSimpleQueriesReceived;
 
 	/**
-	 * Whether to output debugging messages. TODO lc is this true
+	 * Whether to output debugging messages.
 	 */
 	protected boolean DEBUG = false;
 
 	
 	// CONSTRUCTOR ////////////////////////////////////////////////////////////
 	/**
-	 * Basic constructor. Fields pertaining to leaders are initialized to reflect 
+	 * Constructor. Fields pertaining to leaders are initialized to reflect 
 	 * that no leader has yet been elected in the system.
 	 * 
 	 * @param id
@@ -125,6 +130,7 @@ public abstract class Process implements Runnable {
 	
 	/**
 	 * Broadcasts a message to all other processes. Implementation is determined by subclass.
+	 * 
 	 * @param messageType	the type of message to broadcast
 	 * @param mc			the content of the message to broadcast
 	 */
@@ -133,20 +139,22 @@ public abstract class Process implements Runnable {
 	/**
 	 * Query the leader. This should only be invoked after a leader has been chosen,
 	 * by non-leader processes. Implementation is determined by subclass.
+	 * 
 	 * @param mc			the content of the query
 	 */
 	public abstract void queryLeader(MessageContent mc);
-	
-	/*
-	 * TODO MD
+	/**
+	 * The first part of the simple test workload, in which the leader broadcasts to everyone
+	 * else. The leader is responsible for running this after leader election completes. 
 	 */
-	public void startRunningSimple() {
+	public void startWorkloadSimple() {
 		assert(isLeader);
 		broadcast(MessageType.MSG_LEADER_BROADCAST_SIMPLE, new MessageContent("Hello!"));
 	}
-	
-	/* 
-	 * This is not what you think it is. lol. it is a helper very private very secret DO NOT INVOKE
+	/** 
+	 * Send a message from one node to another directly, and register the cost.
+	 * 
+	 * @param m		the message to be sent
 	 */
 	public void sendMessage(Message m) {
 		registerCost(m);
@@ -159,35 +167,12 @@ public abstract class Process implements Runnable {
 	}
 
 	// INCOMING MESSAGES ////////////////////////////////////////////////////////////
-	
-	protected abstract boolean processMessageSpecial(Message m);
-	protected abstract void processMessageAckLeader();
-	
-	protected abstract void processLeaderBroadcastSimple(Message m);
-
-	protected void processLeaderBroadcastSimpleForReceiver(Message m) {
-		assert(!isLeader);
-		System.out.println(id + " has received!");
-		queryLeader(new MessageContent("Why are you talking to me?"));
-	}
-
-	protected abstract boolean processQuerySimple(Message m);
-	
-	protected boolean processQuerySimpleForLeader(Message m) {
-		numSimpleQueriesReceived++;
-		if (numSimpleQueriesReceived == allProcesses.length - 1) {
-			costTracker.dumpCosts();
-			System.out.println("All queries received!");
-			for (int i = 0; i < allProcesses.length; i++) {
-				if (id != allProcesses[i]) {
-					sendMessage(new Message(id, allProcesses[i], MessageType.MSG_KILL, null));
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
+	/**
+	 * Handler for all messages. Forwards to the appropriate handler for the message type.
+	 * 
+	 * @param m		the message received  
+	 * @return 		whether this process should exit after handling this message
+	 */
 	protected boolean processMessage(Message m) {
 		boolean finished = false;
 		switch (m.getType()) {
@@ -209,9 +194,74 @@ public abstract class Process implements Runnable {
 		}
 		return finished;
 	}
+	/**
+	 * Handler for all communication-protocol-specific messages.
+	 * 
+	 * @param m		the message received
+	 * @return 		whether this process should exit after handling this message
+	 */
+	protected abstract boolean processMessageSpecial(Message m);
+	/**
+	 * Top-level handler for message acknowledging the leader's identity, sent during leader election.
+	 */
+	protected abstract void processMessageAckLeader();
+	/**
+	 * Handler for messages broadcasted by the leader as part of the test workload. Does any necessary
+	 * forwarding of the message depending on the communication protocol, and then has this process
+	 * query the leader back.
+	 * 
+	 * @param m		the message received
+	 */
+	protected abstract void processLeaderBroadcastSimple(Message m);
+	/**
+	 * Shared code used by handler for messages broadcasted by the leader as part of the test workload. 
+	 * Here, this process sends a query back to the leader.
+	 * 
+	 * @param m		the message received
+	 */
+	protected void processLeaderBroadcastSimpleForReceiver(Message m) {
+		assert(!isLeader);
+		System.out.println(id + " has received!");
+		queryLeader(new MessageContent("Why are you talking to me?"));
+	}
+	/**
+	 * Top-level handler for queries made to the leader during the test workload. Includes any 
+	 * necessary forwarding of the message depending on the communication protocol.
+	 * 
+	 * @param m		the message received
+	 * @return		whether this process should exit after handling this message
+	 */
+	protected abstract boolean processQuerySimple(Message m);
 	
-	// COST TRACKING ////////////////////////////////////////////////////////////
+	/**
+	 * Handler used by the leader for queries made to the leader during the test workload.
+	 * When the leader has received all such queries, it terminates the simulation.
+	 * 
+	 * @param m		the message received
+	 * @return		whether this process should exit after handling this message
+	 */
+	protected boolean processQuerySimpleForLeader(Message m) {
+		numSimpleQueriesReceived++;
+		if (numSimpleQueriesReceived == allProcesses.length - 1) {
+			costTracker.dumpCosts();
+			System.out.println("All queries received!");
+			for (int i = 0; i < allProcesses.length; i++) {
+				if (id != allProcesses[i]) {
+					sendMessage(new Message(id, allProcesses[i], MessageType.MSG_KILL, null));
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 
+
+	// COST TRACKING ////////////////////////////////////////////////////////////
+	/**
+	 * Registers the cost of sending a message to the global {@code CostTracker} object. 
+	 * 
+	 * @param m		the message being sent
+	 */
 	protected void registerCost(Message m) {
 		Stage s = null;
 		switch (m.getType()) {
@@ -244,7 +294,11 @@ public abstract class Process implements Runnable {
 	}
 
 	// RUNTIME //////////////////////////////////////////////////////////////
-
+	/**
+	 * Handle and remove the oldest message on this process's message queue, if one exists.
+	 * 
+	 * @return	whether this process is done running and should exit
+	 */
 	public boolean checkForMessages() throws InterruptedException {
 		Message m = incomingMessages.poll();
 		if (m == null) {
@@ -252,10 +306,15 @@ public abstract class Process implements Runnable {
 		}
 		return processMessage(m);
 	}
-
+	/**
+	 * Main run loop. Check for and handle one incoming message per second, until the 
+	 * workload is complete. 
+	 */
 	@Override
 	public void run() {
+		/* signals that the workload is complete, and we should break from the loop and exit */
 		boolean done = false;
+		
 		while (!done) {
 			try {
 				done = checkForMessages();

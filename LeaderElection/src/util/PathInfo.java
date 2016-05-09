@@ -3,12 +3,11 @@ package util;
 import java.util.ArrayList;
 
 /**
- * A class representing path information
- *
+ * A class representing the topology and cost of a path traversed by a message
  */
 public class PathInfo {
 	/**
-	 * The nodes along the paths, represented by their IDs
+	 * The IDs of the nodes (processes) along the path, in order of traversal
 	 */
 	private ArrayList<Integer> path;
 	/**
@@ -30,7 +29,7 @@ public class PathInfo {
 	/**
 	 * Simple getter
 	 * 
-	 * @return path arraylist
+	 * @return list of IDs of processes that the path includes
 	 */
 	public ArrayList<Integer> getPath() {
 		return path;

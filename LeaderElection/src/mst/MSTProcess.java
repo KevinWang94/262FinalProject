@@ -67,7 +67,7 @@ public class MSTProcess extends MSTBase {
 				sendMessage(new Message(id, inBranch, MessageType.MSG_ACK_LEADER, null));
 			} else {
 				System.out.println("Leader acked!");
-				startRunningSimple();
+				startWorkloadSimple();
 			}
 		}
 	}

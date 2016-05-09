@@ -9,24 +9,57 @@ import common.Message.MessageType;
 import common.MessageContent;
 import common.Process;
 
+/**
+ * This class represents a process that uses a baseline algorithm for leader election and 
+ * interprocess communication. 
+ * 
+ * Specifically, each process randomly chooses a universally unique identifier (UUID) during
+ * initialization. During leader election, all processes broadcasting their UUIDs, and everyone
+ * agrees that the maximal UUID is the leader of the network. To broadcast, a process directly
+ * sends a message to each other process. To query the leader, a (non-leader) process just 
+ * directly sends a message to the leader.
+ */
 public class BaselineProcess extends Process {
-	public static final int UUID_MAX = 1000000;
-	public static final int UUID_INVALID = -1;
 
-	/* This process's UUID, randomly generated at construction */
-	private int uuid = UUID_INVALID;
-	/* UUID of leader */
+	// INSTANCE FIELDS ////////////////////////////////////////////////////////////
+	/**
+	 * Maximum UUID to which a process can be assigned to
+	 */
+	public static final int UUID_MAX = 100000000;
+	/**
+	 * This process's UUID, randomly generated at construction 
+	 */
+	private int uuid;
+	/**
+	 * UUID of the leader. During election, this is repeatedly updated as the process receives
+	 * broadcasts of more UUIDs, until after all messages are received, this is guaranteed
+	 * to be the maximal UUID of all process, and therefore the UUID of the leader.
+	 */
 	private int leaderUuid;
-
-	/*
-	 * Whether you've already broadcasted your UUID as part of leader election
+	/**
+	 * Whether you've already broadcasted your UUID, used during leader election
 	 */
 	private boolean broadcastedUuid = false;
-	/* Number of UUIDs received from other processes, during leader election */
+	/**
+	 * Number of UUIDs received from other processes, used during leader election 
+	 */
 	private int numUuidsReceived = 0;
-	// Number of acks received that this process is the leader, during leader election
+	/**
+	 * Number of acks received that this process is the leader, used during leader election
+	 */
 	protected int numLeaderAcksReceived = 0;
 
+	// CONSTRUCTOR ////////////////////////////////////////////////////////////
+	/**
+	 * Constructor. For more details on parameters, see {@link Process}.
+	 * 
+	 * @param id			ID (not UUID) of this process
+	 * @param allProcesses	IDs of all processes in the network
+	 * @param costs			Costs associated with transmitting messages between every pair of processes
+	 * @param queues		Message queues associated with each process
+	 * @param incomingMessages	Message queue for this process
+	 * @param costTracker	Global {@link CostTracker} object for tracking communication costs incurred by this process
+	 */
 	public BaselineProcess(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,
 			HashMap<Integer, LinkedBlockingQueue<Message>> queues, LinkedBlockingQueue<Message> incomingMessages,
 			CostTracker costTracker) {
@@ -37,18 +70,31 @@ public class BaselineProcess extends Process {
 		this.leaderId = id;
 	}
 
-	/* =========== Public API =========== */
-
+	// OUTGOING MESSAGES ///////////////////////////////////////////////////////
+	/**
+	 * Broadcast by directly sending the desired message to each other process. 
+	 * 
+	 * See also {@link Process#broadcast(MessageType, MessageContent)}. 
+	 * 
+	 * @param messageType	Type of the message to broadcast (see {@link Message.MessageType})
+	 * @param mc 			Contents of the message to broadcast
+	 */
 	@Override
 	public void broadcast(MessageType messageType, MessageContent mc) {
-//		assert (mc instanceof BaselineMessageContent);
 		for (int i = 0; i < allProcesses.length; i++) {
 			if (allProcesses[i] != id) {
 				sendMessage(new Message(id, allProcesses[i], messageType, mc));
 			}
 		}
 	}
-
+	/**
+	 * Query the leader by directly sending a message containing the desired contents
+	 * to the leader. Can only run after leader election is complete, by non-leaders.
+	 * 
+	 * See also {@link Process#queryLeader(MessageContent)}. 
+	 * 
+	 * @param mc 	Contents of the message
+	 */
 	@Override
 	public void queryLeader(MessageContent mc) {
 		/*
@@ -57,17 +103,24 @@ public class BaselineProcess extends Process {
 		assert(this.leaderId != BaselineProcess.ID_NONE);
 		assert(!isLeader);
 			
+		/*
+		 * Type is MSG_QUERY_SIMPLE because this is only invoked in simple workload
+		 */
 		sendMessage(new Message(id, leaderId, MessageType.MSG_QUERY_SIMPLE, mc));
 	}
-
+	/**
+	 * Triggers the leader election process by broadcasting this process's UUID to everyone. 
+	 * 
+	 * See also {@link Process#triggerLeaderElection()}. 
+	 */
 	@Override
 	public void triggerLeaderElection() {
 		broadcastUuidForElection();
 	}
-
-
-	/* ======== Message sending helpers ========= */
-
+	/**
+	 * Broadcasts this process's UUID to all other processes during leader election. Each process should only
+	 * run this one time.
+	 */
 	private void broadcastUuidForElection() {
 		/* You should only broadcast once */
 		assert (!broadcastedUuid);
@@ -80,24 +133,47 @@ public class BaselineProcess extends Process {
 			}
 		}
 	}
-
+	/**
+	 * Send a message to the leader acknowledging that this process recognizes it as the 
+	 * leader. Invoked after this process receives UUID broadcasts from all other 
+	 * processes in the network.
+	 * 
+	 * See also {@link Process#ackLeader()}. 
+	 */
 	@Override
 	protected void ackLeader() {
 		assert(this.leaderId != BaselineProcess.ID_NONE);
 		sendMessage(new Message(id, leaderId, MessageType.MSG_ACK_LEADER, null));
 	}
 
-	/* ======== Message receipt handlers ========= */
-
-	// TODO MICHELLE where to put this
+	// INCOMING MESSAGES ////////////////////////////////////////////////////////////
+	/**
+	 * Top-level handler for message acknowledging the leader's identity, sent during leader election.
+	 * For baseline algorithm, no routing processing is required, so this simply invokes the shared
+	 * logic of sending a query back to the leader.
+	 * 
+	 * See also {@link Process#processLeaderBroadcastSimple(Message m)} and 
+	 * {@link Process#processLeaderBroadcastSimpleForReceiver(Message m)}.
+	 * 
+	 * @param m	The message received
+	 */
 	protected void processLeaderBroadcastSimple(Message m) {
 		processLeaderBroadcastSimpleForReceiver(m);
 	}
-	
+	/**
+	 * Top-level handler for queries made to the leader during the test workload. For baseline algorithm,
+	 * only the leader ever receives such messages, so this simply invokes the shared logic of 
+	 * terminating the simulation after all queries from non-leader processes are received.
+	 * 
+	 * See also {@link Process#processQuerySimple(Message m)} and 
+	 * {@link Process#processQuerySimpleForLeader(Message m)}.
+	 * 
+	 * @param m		The message received
+	 * @return		Whether this process should exit after handling this message
+	 */
 	protected boolean processQuerySimple(Message m) {
 		return super.processQuerySimpleForLeader(m);
 	}
-
 	/**
 	 * Handle receipts of messages sent as part of baseline leader election, containing
 	 * the sender's UUID.
@@ -117,7 +193,6 @@ public class BaselineProcess extends Process {
 
 		BaselineMessageContent bmc = (BaselineMessageContent) m.getContent();
 		int senderUuid = bmc.getUuid();
-		assert (senderUuid != UUID_INVALID);
 
 		// We only want to broadcast our UUID once
 		if (!broadcastedUuid) {
@@ -150,7 +225,6 @@ public class BaselineProcess extends Process {
 			}
 		}
 	}
-	
 	/**
 	 * This handles messages that non-leaders send to the leader
 	 * at the during baseline leader election, once they know the identity
@@ -174,10 +248,9 @@ public class BaselineProcess extends Process {
 			startWorkloadSimple();
 		}
 	}
-
 	/**
-	 * Handler for all MessageTypes specific to BaselineProcess (not common to Process in general).
-	 * Redirects to specific handler for the MessageType.
+	 * Handler for all {@code MessageType}s specific to {@code BaselineProcess}.
+	 * Redirects to specific handler for the {@code MessageType}.
 	 *
 	 * @param  m	the message received
 	 * @return  true if message was processed; false if case not handled

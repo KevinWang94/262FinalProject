@@ -21,6 +21,7 @@ import common.Message.MessageType;
  * For example, see {@link BaselineProcess} or {@link MSTProcess}.
  */
 public abstract class Process implements Runnable {	
+
 	// INSTANCE FIELDS ////////////////////////////////////////////////////////////
 	/** 
 	 * Uninitialized default ID, used to signal that no leader has been elected
@@ -86,7 +87,7 @@ public abstract class Process implements Runnable {
 	
 	// CONSTRUCTOR ////////////////////////////////////////////////////////////
 	/**
-	 * Basic constructor. Fields pertaining to leaders are initialized to reflect 
+	 * Constructor. Fields pertaining to leaders are initialized to reflect 
 	 * that no leader has yet been elected in the system.
 	 * 
 	 * @param id
@@ -201,7 +202,7 @@ public abstract class Process implements Runnable {
 	 */
 	protected abstract boolean processMessageSpecial(Message m);
 	/**
-	 * Handler for message acknowledging the leader's identity, sent during leader election.
+	 * Top-level handler for message acknowledging the leader's identity, sent during leader election.
 	 */
 	protected abstract void processMessageAckLeader();
 	/**
@@ -224,7 +225,7 @@ public abstract class Process implements Runnable {
 		queryLeader(new MessageContent("Why are you talking to me?"));
 	}
 	/**
-	 * Handler for queries made to the leader during the test workload. Includes any 
+	 * Top-level handler for queries made to the leader during the test workload. Includes any 
 	 * necessary forwarding of the message depending on the communication protocol.
 	 * 
 	 * @param m		the message received

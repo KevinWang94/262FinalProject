@@ -1,12 +1,12 @@
 package util;
 
 /**
- * A simple utility class for pairs of integers
+ * A simple utility class for ordered pairs of integers
  *
  */
 public class Pair {
 	/**
-	 * The fst and snd members of the pair
+	 * The two integers in the pair
 	 */
 	private int fst;
 	private int snd;
@@ -23,25 +23,25 @@ public class Pair {
 	}
 
 	/**
-	 * Simple getter
+	 * Simple getter for first value of pair
 	 * 
-	 * @return fst
+	 * @return {@code fst}
 	 */
 	public int getFst() {
 		return fst;
 	}
 
 	/**
-	 * Simple getter
+	 * Simple getter for second value of pair
 	 * 
-	 * @return snd
+	 * @return {@code snd}
 	 */
 	public int getSnd() {
 		return snd;
 	}
 
 	/**
-	 * So this is hashable
+	 * Simple hash of pair's values; needed for this class to be hashable.
 	 */
 	public int hashCode() {
 		return (fst * 31) ^ snd;
@@ -49,6 +49,8 @@ public class Pair {
 
 	/**
 	 * Implement equals as expected
+	 * 
+	 * @param o	object to compare this to
 	 */
 	public boolean equals(Object o) {
 		if (o instanceof Pair) {

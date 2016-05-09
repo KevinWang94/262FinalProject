@@ -6,7 +6,6 @@ import common.MessageContent;
  * Specific message content for baseline simulation. It is relatively barebones,
  * with just one field for the sender's UUID. This is all that is needed for
  * baseline.
- *
  */
 public class BaselineMessageContent extends MessageContent {
 	/*
@@ -27,7 +26,7 @@ public class BaselineMessageContent extends MessageContent {
 	/**
 	 * Simple getter
 	 * 
-	 * @return senderUUID
+	 * @return {@code senderUUID}
 	 */
 	public int getUuid() {
 		return senderUuid;

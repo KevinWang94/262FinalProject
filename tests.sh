@@ -1,7 +1,7 @@
 #!/bin/bash
-for i in `seq 1 25`;
+for i in `seq 23 24`;
 do
-  j=$((4*$i))
+  j=$i
   echo java -jar ElectionRunner.jar $j data/mst$j.out data/baseline$j.out data/shortestpath$j.out
   java -jar ElectionRunner.jar $j data/mst$j.out data/baseline$j.out data/shortestpath$j.out > run$j.debug
 done

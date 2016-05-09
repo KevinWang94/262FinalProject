@@ -27,6 +27,8 @@ public class CostTracker {
 	 */
 	private ConcurrentHashMap<Stage, ConcurrentHashMap<Integer, Double>> costs;
 
+	private ConcurrentHashMap<Stage, ConcurrentHashMap<Integer, Integer>> counts;
+
 	/**
 	 * Where the results should eventually be written
 	 */
@@ -42,12 +44,18 @@ public class CostTracker {
 	 */
 	public CostTracker(int[] ids, String outfile) {
 		this.costs = new ConcurrentHashMap<Stage, ConcurrentHashMap<Integer, Double>>();
+		this.counts = new ConcurrentHashMap<Stage, ConcurrentHashMap<Integer, Integer>>();
 		for (Stage s : Stage.values()) {
 			ConcurrentHashMap<Integer, Double> stageCosts = new ConcurrentHashMap<Integer, Double>();
 			for (Integer id : ids) {
 				stageCosts.put(id, 0.);
 			}
 			costs.put(s, stageCosts);
+			ConcurrentHashMap<Integer, Integer> stageCounts = new ConcurrentHashMap<Integer, Integer>();
+			for (Integer id : ids) {
+				stageCounts.put(id, 0);
+			}
+			counts.put(s, stageCounts);
 		}
 		this.outfile = outfile;
 	}
@@ -66,6 +74,9 @@ public class CostTracker {
 		ConcurrentHashMap<Integer, Double> stageCosts = costs.get(s);
 		stageCosts.put(processID, stageCosts.get(processID) + cost);
 		costs.put(s, stageCosts);
+		ConcurrentHashMap<Integer, Integer> stageCounts = counts.get(s);
+		stageCounts.put(processID, stageCounts.get(processID) + 1);
+		counts.put(s, stageCounts);
 	}
 
 	/**
@@ -80,6 +91,13 @@ public class CostTracker {
 					sum += d;
 				}
 				out.println("The cost for stage " + s.name() + " is: " + Double.toString(sum));
+				
+				ConcurrentHashMap<Integer, Integer> stageCounts = counts.get(s);
+				int sumCounts = 0;
+				for (Integer d : stageCounts.values()) {
+					sumCounts += d;
+				}
+				out.println("The counts for stage " + s.name() + " is: " + Integer.toString(sumCounts));
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

@@ -17,8 +17,7 @@ import common.Message.MessageType;
  * The communication-related algorithms for electing a leader, broadcasting,
  * and querying the leader must be implemented by subclasses of Process.
  */
-public abstract class Process implements Runnable {
-	
+public abstract class Process implements Runnable {	
 	// INSTANCE FIELDS ////////////////////////////////////////////////////////////
 	/** 
 	 * Uninitialized default ID, used to signal that no leader has been elected
@@ -39,7 +38,6 @@ public abstract class Process implements Runnable {
 	 */
 	protected int[] allProcesses;
 
-	
 	/**
 	 * FIFO queue of incoming messages for this process
 	 */
@@ -75,6 +73,11 @@ public abstract class Process implements Runnable {
 	 * test workload. Initialized to 0.
 	 */
 	int numSimpleQueriesReceived;
+
+	/**
+	 * Whether to output debugging messages. TODO lc is this true
+	 */
+	protected boolean DEBUG = false;
 
 	
 	// CONSTRUCTOR ////////////////////////////////////////////////////////////
@@ -168,16 +171,25 @@ public abstract class Process implements Runnable {
 		queryLeader(new MessageContent("Why are you talking to me?"));
 	}
 
-	protected abstract void processQuerySimple(Message m);
+	protected abstract boolean processQuerySimple(Message m);
 	
-	protected void processQuerySimpleForLeader(Message m) {
+	protected boolean processQuerySimpleForLeader(Message m) {
 		numSimpleQueriesReceived++;
 		if (numSimpleQueriesReceived == allProcesses.length - 1) {
 			costTracker.dumpCosts();
 			System.out.println("All queries received!");
+			for (int i = 0; i < allProcesses.length; i++) {
+				if (id != allProcesses[i]) {
+					sendMessage(new Message(id, allProcesses[i], MessageType.MSG_KILL, null));
+				}
+			}
+			return true;
 		}
+		return false;
 	}
-	protected void processMessage(Message m) {
+
+	protected boolean processMessage(Message m) {
+		boolean finished = false;
 		switch (m.getType()) {
 		case MSG_ACK_LEADER:
 			processMessageAckLeader();
@@ -186,17 +198,17 @@ public abstract class Process implements Runnable {
 			processLeaderBroadcastSimple(m);
 			break;
 		case MSG_QUERY_SIMPLE:
-			processQuerySimple(m);
+			finished = processQuerySimple(m);
+			break;
+		case MSG_KILL:
+			finished = true;
 			break;
 		default:
 			processMessageSpecial(m);
 			break;
 		}
+		return finished;
 	}
-	
-
-	
-
 	
 	// COST TRACKING ////////////////////////////////////////////////////////////
 
@@ -223,29 +235,30 @@ public abstract class Process implements Runnable {
 		case MSG_QUERY_SIMPLE:
 			s = Stage.QUERY;
 			break;
+		case MSG_KILL:
+			break;
 		}
-		if (id != m.getReceiver()) {
+		if (m.getType() != MessageType.MSG_KILL && id != m.getReceiver()) {
 			this.costTracker.registerCosts(s, id, costs.get(id).get(m.getReceiver()));
 		}
 	}
 
-
 	// RUNTIME //////////////////////////////////////////////////////////////
 
-	public void checkForMessages() throws InterruptedException {
+	public boolean checkForMessages() throws InterruptedException {
 		Message m = incomingMessages.poll();
 		if (m == null) {
-			return;
+			return false;
 		}
-		processMessage(m);
-		return;
+		return processMessage(m);
 	}
 
 	@Override
 	public void run() {
-		while (true) {
+		boolean done = false;
+		while (!done) {
 			try {
-				checkForMessages();
+				done = checkForMessages();
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}

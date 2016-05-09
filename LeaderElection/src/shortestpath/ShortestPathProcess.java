@@ -3,7 +3,6 @@ package shortestpath;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import util.Pair;
@@ -16,8 +15,6 @@ import mst.MSTBase;
 import mst.MSTProcess;
 
 public class ShortestPathProcess extends MSTBase {
-	private boolean DEBUG = true;
-	
 	public enum ShortestPathState {
 		STATE_TRANSMIT,
 		STATE_RECEIVING,
@@ -52,8 +49,6 @@ public class ShortestPathProcess extends MSTBase {
 
 	@Override
 	public void processFinish(Message m) {
-		System.out.println(m.getSender() + " to " + id);
-		
 		initializePDMatrix();
 		boolean isLeaf = passMessageMST(m.getType(), m.getContent());
 		if (isLeaf) {
@@ -61,7 +56,6 @@ public class ShortestPathProcess extends MSTBase {
 		} else {
 			state = ShortestPathState.STATE_RECEIVING;
 		}
-		System.out.println(id + ": " + state);
 		nodeAction();
 	}
 	
@@ -287,11 +281,12 @@ public class ShortestPathProcess extends MSTBase {
 	}
 
 	@Override
-	protected void processQuerySimple(Message m) {
+	protected boolean processQuerySimple(Message m) {
 		if (id == leaderId) {
-			super.processQuerySimpleForLeader(m);
+			return super.processQuerySimpleForLeader(m);
 		} else {
 			queryLeader(m.getContent());
+			return false;
 		}
 	}
 }

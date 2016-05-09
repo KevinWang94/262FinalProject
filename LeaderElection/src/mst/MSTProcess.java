@@ -21,7 +21,8 @@ public class MSTProcess extends MSTBase {
 	public void processFinish(Message m) {
 		MSTMessageContent mContent = (MSTMessageContent) m.getContent();
 		leaderId = (int) ((MSTMessageContent) mContent).getArgs()[0];
-		System.out.println(m.getSender() + " to " + id);
+		if (DEBUG)
+			System.out.println(m.getSender() + " to " + id);
 		passMessageMST(m.getType(), m.getContent());
 		ackLeader();
 	}
@@ -44,11 +45,12 @@ public class MSTProcess extends MSTBase {
 		sendMessage(new Message(id, inBranch, MessageType.MSG_QUERY_SIMPLE, mContent));
 	}
 
-	protected void processQuerySimple(Message m) {
+	protected boolean processQuerySimple(Message m) {
 		if (id == leaderId) {
-			super.processQuerySimpleForLeader(m);
+			return super.processQuerySimpleForLeader(m);
 		} else {
 			queryLeader(m.getContent());
+			return false;
 		}
 	}
 

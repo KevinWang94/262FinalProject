@@ -67,7 +67,6 @@ public abstract class MSTBase extends Process {
 	}
 
 	public void wakeup() {
-		System.out.println(this.id + " " + this.fn + " wakeup");
 		int minEdge = getMinEdge();
 		se.put(minEdge, SE_BRANCH);
 		sn = SN_FOUND;
@@ -79,7 +78,6 @@ public abstract class MSTBase extends Process {
 	}
 
 	public void processConnect(Message m) {
-		System.out.println(this.id + " " + this.fn + " process connect from " + m.getSender());
 		int sender = m.getSender();
 		double[] args = ((MSTMessageContent) m.getContent()).getArgs();
 
@@ -114,7 +112,6 @@ public abstract class MSTBase extends Process {
 	}
 
 	public void processAccept(int sender) {
-		System.out.println(this.id + " " + this.fn + " process accept");
 		testEdge = -1;
 		double newCost = costs.get(id).get(sender);
 		if (newCost < bestWt) {
@@ -125,7 +122,6 @@ public abstract class MSTBase extends Process {
 	}
 
 	public void processReject(int sender) {
-		System.out.println(this.id + " " + this.fn + " process reject");
 		if (se.get(sender) == SE_BASIC) {
 			se.put(sender, SE_REJECTED);
 		}
@@ -133,7 +129,6 @@ public abstract class MSTBase extends Process {
 	}
 
 	public void processReport(Message m) {
-		System.out.println(this.id + " " + this.fn + " process report " + this.inBranch);
 		MSTMessageContent msg = (MSTMessageContent) m.getContent();
 		double w = (msg.getArgs())[0];
 		int sender = m.getSender();
@@ -159,13 +154,6 @@ public abstract class MSTBase extends Process {
 
 					if (id == leaderId) {
 						this.isLeader = true;
-						for (int i = 0; i < allProcesses.length; i++) {
-							for (int j = i + 1; j < allProcesses.length; j++) {
-								System.out.println(allProcesses[i] + " " + allProcesses[j] + ": "
-										+ costs.get(allProcesses[i]).get(allProcesses[j]));
-							}
-						}
-
 						System.out.println("MST Leader is " + this.leaderId);
 						double[] newargs = new double[1];
 						newargs[0] = leaderId;
@@ -177,7 +165,6 @@ public abstract class MSTBase extends Process {
 	}
 
 	public void changeRoot() {
-		System.out.println(this.id + " " + this.fn + " changeRoot");
 		if (se.get(bestEdge) == SE_BRANCH) {
 			this.sendMessage(new Message(id, bestEdge, MessageType.MSG_MST_CHANGEROOT, new MSTMessageContent(null)));
 		} else {
@@ -189,17 +176,14 @@ public abstract class MSTBase extends Process {
 	}
 
 	public void processChangeRoot() {
-		System.out.println(this.id + " " + this.fn + " process changeRoot");
 		changeRoot();
 	}
 
 	public void processInitiate(Message m) {
-		System.out.println(this.id + " " + this.fn + " process initiate");
 		double[] args = ((MSTMessageContent) m.getContent()).getArgs();
 		ln = (int) args[0];
 		fn = args[1];
 		sn = (int) args[2];
-		System.out.println(id + " initiate from " + m.getSender() + ": " + ln + " " + fn + " " + sn);
 		inBranch = m.getSender();
 		bestEdge = -1;
 		bestWt = Double.MAX_VALUE;
@@ -223,7 +207,6 @@ public abstract class MSTBase extends Process {
 	}
 
 	public void test() {
-		System.out.println(this.id + " " + this.fn + " test");
 		boolean hasBasic = false;
 		Iterator<Integer> it = se.keySet().iterator();
 		double weight = Double.MAX_VALUE;
@@ -250,7 +233,6 @@ public abstract class MSTBase extends Process {
 	}
 
 	public void processTest(Message m) {
-		System.out.println(this.id + " " + this.fn + " process test");
 		if (sn == SN_SLEEPING) {
 			this.wakeup();
 		}
@@ -286,15 +268,11 @@ public abstract class MSTBase extends Process {
 	}
 
 	public void report() {
-		System.out.println(this.id + " " + this.fn + " report");
 		if (findCount == 0 && testEdge == -1) {
-			System.out.println(id + " report " + inBranch);
 			sn = SN_FOUND;
 			double[] args = new double[1];
 			args[0] = bestWt;
 			this.sendMessage(new Message(id, inBranch, MessageType.MSG_MST_REPORT, new MSTMessageContent(args)));
-		} else {
-			System.out.println(id + " no report " + inBranch);
 		}
 	}
 	

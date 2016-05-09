@@ -1,0 +1,6 @@
+The cost for stage ELECTION is: 363.27783267005486
+The counts for stage ELECTION is: 104
+The cost for stage BROADCAST is: 10.168373373912434
+The counts for stage BROADCAST is: 5
+The cost for stage QUERY is: 16.266408233421565
+The counts for stage QUERY is: 7

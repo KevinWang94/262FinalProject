@@ -18,7 +18,7 @@ public class Message {
 	 */
 	public enum MessageType {
 		/* common */
-		MSG_ACK_LEADER, MSG_LEADER_BROADCAST_SIMPLE, MSG_QUERY_SIMPLE,
+		MSG_ACK_LEADER, MSG_LEADER_BROADCAST_SIMPLE, MSG_QUERY_SIMPLE, MSG_KILL,
 
 		/* baseline */
 		MSG_BASELINE_ELECT_LEADER,

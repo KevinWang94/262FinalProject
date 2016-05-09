@@ -94,8 +94,8 @@ public class BaselineProcess extends Process {
 		processLeaderBroadcastSimpleForReceiver(m);
 	}
 	
-	protected void processQuerySimple(Message m) {
-		super.processQuerySimpleForLeader(m);
+	protected boolean processQuerySimple(Message m) {
+		return super.processQuerySimpleForLeader(m);
 	}
 
 	/**

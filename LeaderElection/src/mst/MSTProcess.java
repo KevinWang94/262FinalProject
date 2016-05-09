@@ -45,11 +45,12 @@ public class MSTProcess extends MSTBase {
 		sendMessage(new Message(id, inBranch, MessageType.MSG_QUERY_SIMPLE, mContent));
 	}
 
-	protected void processQuerySimple(Message m) {
+	protected boolean processQuerySimple(Message m) {
 		if (id == leaderId) {
-			super.processQuerySimpleForLeader(m);
+			return super.processQuerySimpleForLeader(m);
 		} else {
 			queryLeader(m.getContent());
+			return false;
 		}
 	}
 

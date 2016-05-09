@@ -282,11 +282,12 @@ public class ShortestPathProcess extends MSTBase {
 	}
 
 	@Override
-	protected void processQuerySimple(Message m) {
+	protected boolean processQuerySimple(Message m) {
 		if (id == leaderId) {
-			super.processQuerySimpleForLeader(m);
+			return super.processQuerySimpleForLeader(m);
 		} else {
 			queryLeader(m.getContent());
+			return false;
 		}
 	}
 }

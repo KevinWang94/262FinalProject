@@ -57,7 +57,6 @@ public class ElectionRunner {
 		HashSet<Integer> seen = new HashSet<Integer>();
 		int[] ids = new int[numProcesses];
 		for (int i = 0; i < numProcesses; i++) {
-			// TODO: better generation of random id
 			int id = (int) (Math.random() * 1000);
 			while (seen.contains(id)) {
 				id = (int) (Math.random() * 1000);
@@ -69,10 +68,10 @@ public class ElectionRunner {
 	}
 
 	/**
-	 * Randomly generate edge costs
+	 * Randomly generate edge costs. Costs are symmetric.
 	 * 
 	 * @param ids
-	 *            the ids of the processes
+	 *            the IDs of the processes
 	 * @return the costs that have been generated, a mapping from in node to out
 	 *         node to cost
 	 */
@@ -141,8 +140,9 @@ public class ElectionRunner {
 	 * Main driver method
 	 * 
 	 * @param args
-	 *            args[0] is the number of processes desired args[1], [2], and
-	 *            [3] are the outfiles for MST, Baseline, and ShortestPath
+	 *            {@code args[0]} is the number of processes desired. {@args[1-3]} are 
+	 *            the output filenames ({@code outfiles}) for MST, baseline, and shortest
+	 *            path simulations, respectively.
 	 */
 	public static void main(String[] args) {
 		int[] ids = genIds(Integer.parseInt(args[0]));

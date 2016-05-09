@@ -13,8 +13,6 @@ public class Message {
 	 * What type of message this is. All types across the various simulations
 	 * are defined in this enum type, being split into common, baseline, mst,
 	 * and shortest path types as indicated by their prefixes.
-	 * 
-	 * @author kwang01
 	 */
 	public enum MessageType {
 		/* common */

@@ -407,6 +407,13 @@ public class ShortestPathProcess extends MSTBase {
 		wakeup();
 	}
 	
+	/**
+	 * Pass message to other MST edges, skipping the sender node.
+	 * 
+	 * @param messageType - message type to pass
+	 * @param m - message content to pass
+	 * @param sender - node to avoid
+	 */
 	protected void passMessagePath(MessageType messageType, MessageContent m, int sender) {
 		for (Integer nextId : se.keySet()) {
 			if ((nextId != sender) && se.get(nextId) == SE_BRANCH) {
@@ -415,12 +422,19 @@ public class ShortestPathProcess extends MSTBase {
 		}
 	}
 
+	/** 
+	 * Broadcasts a message from the leader to other nodes in the network
+	 */
 	@Override
 	public void broadcast(MessageType messageType, MessageContent mc) {
 		assert (id == this.leaderId);
 		passMessagePath(messageType, mc, -1);
 	}
 
+	/**
+	 * Queries the leader by moving one step in the direction of the leader on the
+	 * shortest path to the leader.
+	 */
 	@Override
 	public void queryLeader(MessageContent mc) {
 		assert(!isLeader);
@@ -429,6 +443,13 @@ public class ShortestPathProcess extends MSTBase {
 		sendMessage(new Message(id, path.get(1), MessageType.MSG_QUERY_SIMPLE, mc));
 	}
 	
+	/**
+	 * Send a message to the leader by moving one step in the direction of the leader
+	 * on the shortest path to the leader.
+	 * 
+	 * As the leader, count the number of acks that we have received, and 
+	 * end when all of our neighbors have acknowledged the completion of leader election.
+	 */
 	@Override
 	protected void ackLeader() {
 		if (!isLeader) {
@@ -438,16 +459,24 @@ public class ShortestPathProcess extends MSTBase {
 			acksReceived++;
 			if (acksReceived == numBranch) {
 				System.out.println("Leader acked!");
+				// next step of the workload, implemented in {@link Process}
 				startWorkloadSimple();			
 			}
 		}
 	}
 
+	/**
+	 * Ack the choice of a leader.
+	 */
 	@Override
 	protected void processMessageAckLeader() {
 		ackLeader();
 	}
 
+	/**
+	 * Process a broadcast message as an intermediate node, 
+	 * passing the broadcast to further nodes via the MST connections.
+	 */
 	@Override
 	protected void processLeaderBroadcastSimple(Message m) {
 		assert(!isLeader);
@@ -455,6 +484,11 @@ public class ShortestPathProcess extends MSTBase {
 		super.processLeaderBroadcastSimpleForReceiver(m);
 	}
 
+	/** 
+	 * Process a query to the leader, calling the method implemented in
+	 * {@link Process} if a leader, and otherwise passing the
+	 * message further in the direction of the leader.
+	 */
 	@Override
 	protected boolean processQuerySimple(Message m) {
 		if (id == leaderId) {

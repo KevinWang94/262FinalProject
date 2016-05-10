@@ -1,5 +1,5 @@
 #!/bin/bash
-for i in `seq 23 24`;
+for i in `seq 23 23`;
 do
   j=$i
   echo java -jar ElectionRunner.jar $j data/mst$j.out data/baseline$j.out data/shortestpath$j.out

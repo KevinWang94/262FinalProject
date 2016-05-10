@@ -10,6 +10,9 @@ import common.MessageContent;
 
 public class MSTProcess extends MSTBase {
 
+	/**
+	 * 
+	 */
 	int acksReceived = 0;
 
 	public MSTProcess(int id, int[] allProcesses, HashMap<Integer, HashMap<Integer, Double>> costs,

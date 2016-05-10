@@ -21,8 +21,13 @@ git clone https://github.com/KevinWang94/262FinalProject
 ### Creating a Runnable JAR
 
 To create a runnable jar, 
-1. cd into LeaderElection/bin
-2. run 'jar cvfm ElectionRunner.jar ../manifest */*.class'
+1. Import the project into Eclipse.
+2. Right click on LeaderElection, and select "Export".
+3. In the selection window, choose Jar under Java.
+4. Check LeaderElection under resources to import and choose a filename
+   for the jar.
+5. Choose ElectionRunner.class as the main class.
+6. Finish.
 
 ### Running
 

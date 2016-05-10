@@ -204,6 +204,8 @@ public abstract class MSTBase extends Process {
 	 * higher than the previous level.
 	 * 
 	 * @param m: the message being processed. Must be of type MSG_MST_CONNECT.
+	 * The message content is expected to contain an array of one element 
+	 * containing the level number.
 	 */
 	public void processConnect(Message m) {
 		int sender = m.getSender();
@@ -286,7 +288,9 @@ public abstract class MSTBase extends Process {
 	 * that initiated it, update bestWt and bestEdge if it is lower
 	 * cost than the previous best, and subtract one from findCount.
 	 * 
-	 * @param m: the REPORT message
+	 * @param m: the REPORT message. The message type is expected to be 
+	 * MSG_MST_REPORT. The message content is expected to contain an array 
+	 * of one element containing the weight of the minimum edge.
 	 */
 	public void processReport(Message m) {
 		MSTMessageContent msg = (MSTMessageContent) m.getContent();
@@ -328,7 +332,9 @@ public abstract class MSTBase extends Process {
 
 
 	/**
-	 * Changes the root of a fragment.
+	 * Changes the root of a fragment by propagating the message
+	 * along the best edges until we reach the minimal outgoing
+	 * edge of the fragment, and sends a CONNECT message.
 	 */
 	public void changeRoot() {
 		if (se.get(bestEdge) == SE_BRANCH) {
@@ -362,7 +368,10 @@ public abstract class MSTBase extends Process {
 	 * is in the FIND state, it also calls {@link test} to find 
 	 * its own minimum weight outgoing edge.
 	 * 
-	 * @param m
+	 * @param m: the message being processed. The message type is expected
+	 * to be MSG_MST_INITIATE. The message content is expected to contain an 
+	 * array of three elements, the level number, the fragment number, and
+	 * the state.
 	 */
 	public void processInitiate(Message m) {
 		double[] args = ((MSTMessageContent) m.getContent()).getArgs();
@@ -435,7 +444,9 @@ public abstract class MSTBase extends Process {
 	 * an ACCEPT message, since it is an outgoing edge. Otherwise, send 
 	 * the REJECT message, since they are in the same fragment.
 	 * 
-	 * @param m: the TEST message being processed
+	 * @param m: the TEST message being processed. The message content is 
+	 * expected to contain an array of two elements, the level number
+	 * and fragment number.
 	 */
 	public void processTest(Message m) {
 		if (sn == SN_SLEEPING) {

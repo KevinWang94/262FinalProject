@@ -20,11 +20,17 @@ git clone https://github.com/KevinWang94/262FinalProject
 
 ### Creating a Runnable JAR
 
-LUCY THIS IS FOR YOU
+To create a runnable jar, 
+1. cd into LeaderElection/bin
+2. run 'jar cvfm ElectionRunner.jar ../manifest */*.class'
 
 ### Running
 
 Run the created JAR at the command line with the following arguments:
+
+1. java -jar ElectionRunner.jar [# of machines] [output file for baseline] 
+   [output file for mst] [output file for shortest path]
+
 
 XX 
 ## Overview

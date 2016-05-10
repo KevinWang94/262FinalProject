@@ -18,7 +18,7 @@ git clone https://github.com/KevinWang94/262FinalProject
 
 ## Running
 
-### Creating a Runnable JAR
+### Creating a JAR
 
 To create a runnable jar, 
 1. Import the project into Eclipse.
@@ -29,15 +29,15 @@ To create a runnable jar,
 5. Choose ElectionRunner.class as the main class.
 6. Finish.
 
-### Running
+### Running the JAR
 
 Run the created JAR at the command line with the following arguments:
 
-1. java -jar ElectionRunner.jar [# of machines] [output file for baseline] 
+```
+java -jar ElectionRunner.jar [# of machines] [output file for baseline] 
    [output file for mst] [output file for shortest path]
+```
 
-
-XX 
 ## Overview
 
 This is a simulation system meant to capture basic operations in a distributed
